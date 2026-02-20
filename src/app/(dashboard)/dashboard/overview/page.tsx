@@ -1,30 +1,15 @@
-import Link from "next/link";
 import { formatDistanceToNow, subHours } from "date-fns";
-import {
-  AlertTriangle,
-  ArrowRight,
-  CheckCircle2,
-  ChefHat,
-  ClipboardCheck,
-  Database as DatabaseIcon,
-  Link2,
-  PackageSearch,
-  RefreshCcw,
-  ShoppingCart,
-  TrendingUp,
-  TriangleAlert,
-  type LucideIcon,
-} from "lucide-react";
 
-import { OverviewCategoryCharts } from "@/components/dashboard/overview/overview-category-charts";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { OverviewDashboard } from "@/components/dashboard/overview/overview-dashboard";
+import type {
+  PerformanceChartPoint,
+  PerformanceFilterGroup,
+  PerformanceKpi,
+} from "@/components/dashboard/overview/performance-card";
 import { createClient } from "@/lib/supabase/server";
-import { cn } from "@/lib/utils";
 import type { Json } from "@/types/database";
-type GenericRow = Record<string, Json | undefined>;
 
+type GenericRow = Record<string, Json | undefined>;
 type ActivityKind = "order" | "stock_check" | "recipe" | "import" | "sync";
 
 type ActivityEntry = {
@@ -32,15 +17,13 @@ type ActivityEntry = {
   kind: ActivityKind;
   description: string;
   occurredAt: Date;
-  actorId: string | null;
 };
 
 type AttentionItem = {
   id: string;
-  icon: LucideIcon;
   message: string;
-  href?: string;
-  actionLabel?: string;
+  href: string;
+  actionLabel: string;
   tone: "warning" | "error" | "info";
 };
 
@@ -51,13 +34,16 @@ const CONFIDENCE_SCORE: Record<string, number> = {
   high: 85,
 };
 
-const ACTIVITY_ICON: Record<ActivityKind, LucideIcon> = {
-  order: ShoppingCart,
-  stock_check: ClipboardCheck,
-  recipe: ChefHat,
-  import: DatabaseIcon,
-  sync: RefreshCcw,
-};
+const TWO_HOUR_BUCKETS = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22] as const;
+
+const NET_SALES_KEYS = ["net_sales", "net_amount", "net_total", "amount", "total_amount"];
+const GROSS_SALES_KEYS = ["gross_sales", "gross_amount", "gross_total", "total_sales"];
+const TRANSACTION_ID_KEYS = ["square_order_id", "order_id", "order_number", "id"];
+
+const CURRENCY_FORMATTER = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+});
 
 function isNonEmptyString(value: string | null): value is string {
   return typeof value === "string" && value.trim().length > 0;
@@ -95,7 +81,6 @@ function toDateValue(value: Json | undefined): Date | null {
   }
 
   const date = new Date(stringValue);
-
   if (Number.isNaN(date.getTime())) {
     return null;
   }
@@ -130,8 +115,127 @@ function isItemActive(row: GenericRow) {
   return typeof activeValue === "boolean" ? activeValue : true;
 }
 
-function getCategoryLabel(row: GenericRow) {
-  return getFirstString(row, ["item_category", "category", "type", "group"]) ?? "Uncategorized";
+function toDayKey(value: Date) {
+  return value.toISOString().slice(0, 10);
+}
+
+function rowMatchesDay(row: GenericRow, keys: string[], targetDay: string) {
+  const date = getLatestDate(row, keys);
+  return date ? toDayKey(date) === targetDay : false;
+}
+
+function formatCurrency(value: number | null) {
+  return CURRENCY_FORMATTER.format(value ?? 0);
+}
+
+function sumMetric(rows: GenericRow[], keys: string[]) {
+  let total = 0;
+  let foundAny = false;
+
+  for (const row of rows) {
+    for (const key of keys) {
+      const numericValue = toNumberValue(row[key]);
+      if (numericValue !== null) {
+        total += numericValue;
+        foundAny = true;
+        break;
+      }
+    }
+  }
+
+  return foundAny ? total : null;
+}
+
+function formatHourLabel(hour: number) {
+  if (hour === 0) {
+    return "12a";
+  }
+
+  if (hour < 12) {
+    return `${hour}a`;
+  }
+
+  if (hour === 12) {
+    return "12p";
+  }
+
+  return `${hour - 12}p`;
+}
+
+function buildPerformanceChartData(
+  dailySalesRows: GenericRow[],
+  orderRows: GenericRow[],
+  todayKey: string,
+  priorDayKey: string,
+) {
+  const buckets = new Map<number, { current: number; prior: number }>();
+
+  for (const hour of TWO_HOUR_BUCKETS) {
+    buckets.set(hour, { current: 0, prior: 0 });
+  }
+
+  for (const row of dailySalesRows) {
+    const soldAt = getLatestDate(row, ["sold_at", "created_at", "updated_at"]);
+    if (!soldAt) {
+      continue;
+    }
+
+    const dateKey = toDayKey(soldAt);
+    if (dateKey !== todayKey && dateKey !== priorDayKey) {
+      continue;
+    }
+
+    const quantitySold = toNumberValue(row.quantity_sold) ?? toNumberValue(row.quantity) ?? 0;
+    if (quantitySold <= 0) {
+      continue;
+    }
+
+    const bucketHour = Math.floor(soldAt.getHours() / 2) * 2;
+    if (!buckets.has(bucketHour)) {
+      continue;
+    }
+
+    if (dateKey === todayKey) {
+      buckets.get(bucketHour)!.current += quantitySold;
+    } else {
+      buckets.get(bucketHour)!.prior += quantitySold;
+    }
+  }
+
+  const hasSalesData = Array.from(buckets.values()).some(
+    (item) => item.current > 0 || item.prior > 0,
+  );
+
+  if (!hasSalesData) {
+    for (const row of orderRows) {
+      const occurredAt = getLatestDate(row, ["submitted_at", "created_at", "updated_at", "order_date"]);
+      if (!occurredAt) {
+        continue;
+      }
+
+      const dateKey = toDayKey(occurredAt);
+      if (dateKey !== todayKey && dateKey !== priorDayKey) {
+        continue;
+      }
+
+      const bucketHour = Math.floor(occurredAt.getHours() / 2) * 2;
+      if (!buckets.has(bucketHour)) {
+        continue;
+      }
+
+      if (dateKey === todayKey) {
+        buckets.get(bucketHour)!.current += 1;
+      } else {
+        buckets.get(bucketHour)!.prior += 1;
+      }
+    }
+  }
+
+  return TWO_HOUR_BUCKETS.map((hour) => ({
+    label: formatHourLabel(hour),
+    current: Number((buckets.get(hour)?.current ?? 0).toFixed(2)),
+    prior: Number((buckets.get(hour)?.prior ?? 0).toFixed(2)),
+  })) satisfies PerformanceChartPoint[];
 }
 
 async function resolveOrgId(
@@ -190,38 +294,6 @@ async function safeOrgFetch(
   return [] as GenericRow[];
 }
 
-function confidenceTone(score: number | null) {
-  if (score === null) {
-    return {
-      text: "Not yet available",
-      colorClass: "text-muted-foreground",
-      pillClass: "bg-secondary text-muted-foreground",
-    };
-  }
-
-  if (score > 70) {
-    return {
-      text: "Healthy",
-      colorClass: "text-emerald-600 dark:text-emerald-400",
-      pillClass: "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-    };
-  }
-
-  if (score > 40) {
-    return {
-      text: "Moderate",
-      colorClass: "text-amber-600 dark:text-amber-400",
-      pillClass: "bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-    };
-  }
-
-  return {
-    text: "Low",
-    colorClass: "text-red-600 dark:text-red-400",
-    pillClass: "bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-300",
-  };
-}
-
 export default async function OverviewPage() {
   const supabase = await createClient();
 
@@ -269,27 +341,6 @@ export default async function OverviewPage() {
   const activeInventoryRows = inventoryRows.filter(isItemActive);
   const totalInventoryItems = activeInventoryRows.length;
 
-  const categoryCounts = new Map<string, number>();
-  const inventoryCategoryById = new Map<string, string>();
-  for (const row of inventoryRows) {
-    const rowId = toStringValue(row.id);
-    const category = getCategoryLabel(row);
-
-    if (rowId) {
-      inventoryCategoryById.set(rowId, category);
-    }
-
-    if (isItemActive(row)) {
-      categoryCounts.set(category, (categoryCounts.get(category) ?? 0) + 1);
-    }
-  }
-
-  const inventoryByCategory = Array.from(categoryCounts.entries())
-    .map(([category, value]) => ({ category, value }))
-    .sort((left, right) => right.value - left.value);
-
-  const uniqueCategoryCount = categoryCounts.size;
-
   const mappedRecipeCatalogIds = new Set(
     recipeRows
       .map((row) => toStringValue(row.square_catalog_item_id))
@@ -305,93 +356,152 @@ export default async function OverviewPage() {
   const mappedRecipeCount = mappedRecipeCatalogIds.size;
   const soldCatalogItemCount = uniqueSoldCatalogIds.size;
   const mappingProgress =
-    soldCatalogItemCount > 0 ? Math.min(100, Math.round((mappedRecipeCount / soldCatalogItemCount) * 100)) : 0;
+    soldCatalogItemCount > 0
+      ? Math.min(100, Math.round((mappedRecipeCount / soldCatalogItemCount) * 100))
+      : 0;
 
   const squareConnection = [...squareConnectionRows]
     .sort((left, right) => {
       const leftDate =
-        getLatestDate(left, ["updated_at", "last_synced_at", "created_at"])?.getTime() ??
-        0;
+        getLatestDate(left, ["updated_at", "last_synced_at", "created_at"])?.getTime() ?? 0;
       const rightDate =
-        getLatestDate(right, ["updated_at", "last_synced_at", "created_at"])?.getTime() ??
-        0;
+        getLatestDate(right, ["updated_at", "last_synced_at", "created_at"])?.getTime() ?? 0;
       return rightDate - leftDate;
     })
     .at(0);
 
   const isSquareConnected = Boolean(squareConnection);
+  const syncStatus = squareConnection ? toStringValue(squareConnection.sync_status) ?? "active" : "not_connected";
+  const syncErrorMessage = squareConnection ? toStringValue(squareConnection.sync_error_message) : null;
+  const lastSyncedAt = squareConnection ? getLatestDate(squareConnection, ["last_synced_at"]) : null;
 
-  const todayIso = new Date().toISOString().slice(0, 10);
-  const todaysForecastRows = forecastRows.filter((row) => toStringValue(row.forecast_date) === todayIso);
+  const syncStatusTone =
+    syncStatus === "active"
+      ? "healthy"
+      : syncStatus === "paused"
+        ? "warning"
+        : syncStatus === "error"
+          ? "error"
+          : "neutral";
+
+  const syncStatusLabel =
+    syncStatus === "not_connected"
+      ? "Not connected"
+      : `${syncStatus.charAt(0).toUpperCase()}${syncStatus.slice(1)}${
+          lastSyncedAt ? ` • ${formatDistanceToNow(lastSyncedAt, { addSuffix: true })}` : ""
+        }`;
+
+  const now = new Date();
+  const todayKey = toDayKey(now);
+  const priorDayDate = new Date(now);
+  priorDayDate.setDate(priorDayDate.getDate() - 1);
+  const priorDayKey = toDayKey(priorDayDate);
+
+  const todaysSalesRows = dailySalesRows.filter((row) =>
+    rowMatchesDay(row, ["sold_at", "created_at", "updated_at"], todayKey),
+  );
+  const todaysOrderRows = orderRows.filter((row) =>
+    rowMatchesDay(row, ["submitted_at", "created_at", "updated_at", "order_date"], todayKey),
+  );
+
+  const netSales =
+    sumMetric(todaysSalesRows, NET_SALES_KEYS) ?? sumMetric(todaysOrderRows, NET_SALES_KEYS);
+  const grossSales =
+    sumMetric(todaysSalesRows, GROSS_SALES_KEYS) ?? sumMetric(todaysOrderRows, GROSS_SALES_KEYS);
+
+  const transactionIds = new Set(
+    [...todaysSalesRows, ...todaysOrderRows]
+      .map((row) => getFirstString(row, TRANSACTION_ID_KEYS))
+      .filter(isNonEmptyString),
+  );
+  const transactionCount = transactionIds.size > 0 ? transactionIds.size : null;
+  const averageSale =
+    netSales !== null && transactionCount !== null && transactionCount > 0
+      ? netSales / transactionCount
+      : null;
+
+  const chartData = buildPerformanceChartData(
+    dailySalesRows,
+    orderRows,
+    todayKey,
+    priorDayKey,
+  );
+
+  const todaysForecastRows = forecastRows.filter((row) => toStringValue(row.forecast_date) === todayKey);
   const confidenceScores = todaysForecastRows.map((row) => {
     const confidenceValue = toStringValue(row.confidence) ?? "none";
     return CONFIDENCE_SCORE[confidenceValue] ?? 0;
   });
-
   const averageConfidence =
     confidenceScores.length > 0
       ? confidenceScores.reduce((total, value) => total + value, 0) / confidenceScores.length
       : null;
 
-  const confidenceVisual = confidenceTone(averageConfidence);
+  const performanceFilters: PerformanceFilterGroup[] = [
+    {
+      id: "date",
+      label: "Date",
+      defaultValue: "today",
+      options: [
+        {
+          value: "today",
+          label: new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(now),
+        },
+      ],
+    },
+    {
+      id: "comparison",
+      label: "vs",
+      defaultValue: "prior-day",
+      options: [
+        { value: "prior-day", label: "Prior day" },
+        { value: "prior-week", label: "Prior week" },
+      ],
+    },
+    {
+      id: "checks",
+      label: "Checks",
+      defaultValue: "closed",
+      options: [
+        { value: "closed", label: "Closed" },
+        { value: "all", label: "All" },
+      ],
+    },
+  ];
 
-  const lastSyncedAt = squareConnection ? getLatestDate(squareConnection, ["last_synced_at"]) : null;
-  const syncStatus = squareConnection ? toStringValue(squareConnection.sync_status) ?? "active" : "not_connected";
-  const syncErrorMessage = squareConnection ? toStringValue(squareConnection.sync_error_message) : null;
+  const primaryKpi: PerformanceKpi = {
+    id: "net-sales",
+    label: "Net sales",
+    value: formatCurrency(netSales),
+    unavailable: netSales === null,
+  };
 
-  const syncIndicatorClass =
-    syncStatus === "active"
-      ? "bg-emerald-500"
-      : syncStatus === "paused"
-        ? "bg-amber-500"
-        : syncStatus === "error"
-          ? "bg-red-500"
-          : "bg-muted-foreground";
-
-  const recipeCategoriesByCatalog = new Map<string, Set<string>>();
-  for (const recipe of recipeRows) {
-    const catalogId = toStringValue(recipe.square_catalog_item_id);
-    const inventoryItemId = toStringValue(recipe.inventory_item_id);
-
-    if (!catalogId) {
-      continue;
-    }
-
-    const resolvedCategory = inventoryItemId
-      ? inventoryCategoryById.get(inventoryItemId) ?? "Unmapped"
-      : "Unmapped";
-
-    if (!recipeCategoriesByCatalog.has(catalogId)) {
-      recipeCategoriesByCatalog.set(catalogId, new Set());
-    }
-
-    recipeCategoriesByCatalog.get(catalogId)?.add(resolvedCategory);
-  }
-
-  const usageByCategoryMap = new Map<string, number>();
-  for (const saleRow of dailySalesRows) {
-    const quantitySold = toNumberValue(saleRow.quantity_sold) ?? 0;
-    if (quantitySold <= 0) {
-      continue;
-    }
-
-    const catalogId = toStringValue(saleRow.square_catalog_item_id);
-    const resolvedCategories = catalogId
-      ? Array.from(recipeCategoriesByCatalog.get(catalogId) ?? ["Unmapped"])
-      : ["Unmapped"];
-
-    const splitQuantity = quantitySold / Math.max(resolvedCategories.length, 1);
-    for (const category of resolvedCategories) {
-      usageByCategoryMap.set(category, (usageByCategoryMap.get(category) ?? 0) + splitQuantity);
-    }
-  }
-
-  const usageByCategory = Array.from(usageByCategoryMap.entries())
-    .map(([category, value]) => ({
-      category,
-      value: Number(value.toFixed(2)),
-    }))
-    .sort((left, right) => right.value - left.value);
+  const secondaryKpis: PerformanceKpi[] = [
+    {
+      id: "gross-sales",
+      label: "Gross sales",
+      value: formatCurrency(grossSales),
+      unavailable: grossSales === null,
+    },
+    {
+      id: "transactions",
+      label: "Transactions",
+      value: (transactionCount ?? 0).toLocaleString(),
+      unavailable: transactionCount === null,
+    },
+    {
+      id: "average-sale",
+      label: "Average sale",
+      value: formatCurrency(averageSale),
+      unavailable: averageSale === null,
+    },
+    {
+      id: "forecast-confidence",
+      label: "Forecast confidence",
+      value: averageConfidence === null ? "0%" : `${Math.round(averageConfidence)}%`,
+      unavailable: averageConfidence === null,
+    },
+  ];
 
   const activityWindowStart = subHours(new Date(), 24);
   const rawActivity: ActivityEntry[] = [];
@@ -408,13 +518,12 @@ export default async function OverviewPage() {
       kind: "order",
       description: orderReference ? `Order ${orderReference} submitted` : "New order submitted",
       occurredAt,
-      actorId: getFirstString(order, ["submitted_by", "created_by", "user_id"]),
     });
   }
 
   for (const stockSession of stockSessionRows) {
     const occurredAt = getLatestDate(stockSession, ["completed_at", "updated_at", "created_at"]);
-    if (!occurredAt) {
+    if (!occurredAt || occurredAt < activityWindowStart) {
       continue;
     }
 
@@ -423,13 +532,12 @@ export default async function OverviewPage() {
       kind: "stock_check",
       description: "Stock count session completed",
       occurredAt,
-      actorId: getFirstString(stockSession, ["completed_by", "created_by", "user_id"]),
     });
   }
 
   for (const recipe of recipeRows) {
     const occurredAt = getLatestDate(recipe, ["updated_at", "created_at"]);
-    if (!occurredAt) {
+    if (!occurredAt || occurredAt < activityWindowStart) {
       continue;
     }
 
@@ -439,20 +547,18 @@ export default async function OverviewPage() {
       kind: "recipe",
       description: recipeName
         ? `Recipe mapping updated for ${recipeName}`
-        : "Recipe mapping added or updated",
+        : "Recipe mapping updated",
       occurredAt,
-      actorId: getFirstString(recipe, ["confirmed_by", "updated_by", "created_by"]),
     });
   }
 
   for (const batch of importBatchRows) {
-    const status = toStringValue(batch.status);
-    if (status !== "completed") {
+    if ((toStringValue(batch.status) ?? "") !== "completed") {
       continue;
     }
 
     const occurredAt = getLatestDate(batch, ["completed_at", "created_at"]);
-    if (!occurredAt) {
+    if (!occurredAt || occurredAt < activityWindowStart) {
       continue;
     }
 
@@ -462,60 +568,32 @@ export default async function OverviewPage() {
       kind: "import",
       description: fileName ? `Data import completed (${fileName})` : "Data import completed",
       occurredAt,
-      actorId: getFirstString(batch, ["uploaded_by", "created_by"]),
     });
   }
 
   for (const connection of squareConnectionRows) {
     const occurredAt = getLatestDate(connection, ["last_synced_at", "updated_at", "created_at"]);
-    if (!occurredAt) {
+    if (!occurredAt || occurredAt < activityWindowStart) {
       continue;
     }
 
     const status = toStringValue(connection.sync_status) ?? "active";
-    const description =
-      status === "error"
-        ? "Square sync reported an error"
-        : status === "paused"
-          ? "Square sync paused"
-          : "Square sync event completed";
-
     rawActivity.push({
       id: `sync-${toStringValue(connection.id) ?? occurredAt.getTime()}`,
       kind: "sync",
-      description,
+      description:
+        status === "error"
+          ? "Square sync reported an error"
+          : status === "paused"
+            ? "Square sync paused"
+            : "Square sync completed",
       occurredAt,
-      actorId: null,
     });
-  }
-
-  const actorIds = Array.from(
-    new Set(rawActivity.map((item) => item.actorId).filter(isNonEmptyString)),
-  );
-
-  let actorNameMap = new Map<string, string>();
-  if (actorIds.length > 0) {
-    const { data: profileRows } = await supabase
-      .from("profiles")
-      .select("id, full_name")
-      .in("id", actorIds);
-
-    if (profileRows) {
-      actorNameMap = new Map(
-        profileRows
-          .map((profile) => [profile.id, profile.full_name ?? "Team member"] as const)
-          .filter(([id]) => isNonEmptyString(id)),
-      );
-    }
   }
 
   const recentActivity = rawActivity
     .sort((left, right) => right.occurredAt.getTime() - left.occurredAt.getTime())
-    .slice(0, 10)
-    .map((item) => ({
-      ...item,
-      actorName: item.actorId ? actorNameMap.get(item.actorId) ?? "Team member" : "System",
-    }));
+    .slice(0, 5);
 
   const lowConfidenceItems = new Set(
     forecastRows
@@ -571,8 +649,7 @@ export default async function OverviewPage() {
   if (unmappedItemCount > 0) {
     attentionItems.push({
       id: "unmapped-menu-items",
-      icon: PackageSearch,
-      message: `${unmappedItemCount} new menu items need recipe mapping`,
+      message: `${unmappedItemCount} menu item${unmappedItemCount > 1 ? "s" : ""} need recipe mapping`,
       href: "/dashboard/recipes",
       actionLabel: "Open recipes",
       tone: "warning",
@@ -582,8 +659,7 @@ export default async function OverviewPage() {
   if (lowConfidenceCount > 0) {
     attentionItems.push({
       id: "low-confidence-forecasts",
-      icon: TrendingUp,
-      message: `${lowConfidenceCount} items have low forecast confidence`,
+      message: `${lowConfidenceCount} item${lowConfidenceCount > 1 ? "s" : ""} have low forecast confidence`,
       href: "/dashboard/forecasts",
       actionLabel: "Review forecasts",
       tone: "warning",
@@ -593,8 +669,7 @@ export default async function OverviewPage() {
   if (staleStockCount > 0) {
     attentionItems.push({
       id: "stale-stock-counts",
-      icon: ClipboardCheck,
-      message: `${staleStockCount} items haven't been counted in 3+ days`,
+      message: `${staleStockCount} inventory item${staleStockCount > 1 ? "s" : ""} not counted in 3+ days`,
       href: "/dashboard/inventory",
       actionLabel: "Open inventory",
       tone: "info",
@@ -604,10 +679,9 @@ export default async function OverviewPage() {
   if (syncStatus === "error") {
     attentionItems.push({
       id: "square-sync-error",
-      icon: AlertTriangle,
       message: `Square sync error${syncErrorMessage ? `: ${syncErrorMessage}` : ""}`,
       href: "/dashboard/square",
-      actionLabel: "Fix Square sync",
+      actionLabel: "Fix sync",
       tone: "error",
     });
   }
@@ -615,8 +689,7 @@ export default async function OverviewPage() {
   if (needsReviewCount > 0) {
     attentionItems.push({
       id: "imports-needing-review",
-      icon: DatabaseIcon,
-      message: `${needsReviewCount} data import${needsReviewCount > 1 ? "s" : ""} need your review`,
+      message: `${needsReviewCount} import${needsReviewCount > 1 ? "s" : ""} need review`,
       href: "/dashboard/import",
       actionLabel: "Review imports",
       tone: "warning",
@@ -629,248 +702,54 @@ export default async function OverviewPage() {
     soldCatalogItemCount === 0 &&
     todaysForecastRows.length === 0;
 
+  const offerDescription = onboardingPrompt
+    ? "Launch app and import inventory data to activate live operations tracking."
+    : isSquareConnected
+      ? `${mappedRecipeCount} of ${soldCatalogItemCount || 0} sold items are mapped to recipes (${mappingProgress}%).`
+      : "Square connection is offline. Reconnect to restore automated data syncs.";
+
+  const offerActionLabel = "Launch app";
+
+  const offerActionHref = !isSquareConnected
+    ? "/dashboard/square"
+    : mappingProgress < 100
+      ? "/dashboard/recipes"
+      : "/dashboard/forecasts";
+
+  const latestActivity = recentActivity[0]
+    ? `${recentActivity[0].description} • ${formatDistanceToNow(recentActivity[0].occurredAt, {
+        addSuffix: true,
+      })}`
+    : null;
+
+  const topAttention = attentionItems[0]?.message ?? null;
+
+  const quickActions = [
+    {
+      label: "Launch app",
+      href: "/dashboard/square",
+      primary: true,
+    },
+    { label: "Import inventory data", href: "/dashboard/import" },
+    { label: "Start recipe mapping", href: "/dashboard/recipes" },
+  ];
+
   return (
-    <div className="space-y-6">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Overview</h1>
-        <p className="text-sm text-muted-foreground">
-          Quick health check of inventory coverage, data quality, and sync reliability for your restaurant operation.
-        </p>
-      </header>
-
-      {onboardingPrompt ? (
-        <Card className="border-dashed">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Link2 className="h-4 w-4 text-muted-foreground" />
-              Welcome to Babytuna Systems
-            </CardTitle>
-            <CardDescription>
-              Your workspace is ready. Connect Square and import baseline inventory to start seeing operational insights.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            <Button asChild size="sm">
-              <Link href="/dashboard/square">Connect Square</Link>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <Link href="/dashboard/import">Import inventory data</Link>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <Link href="/dashboard/recipes">Start recipe mapping</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      ) : null}
-
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Total Inventory Items</CardDescription>
-            <CardTitle className="text-3xl font-bold">
-              {totalInventoryItems.toLocaleString()}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-muted-foreground">
-              {uniqueCategoryCount.toLocaleString()} {uniqueCategoryCount === 1 ? "category" : "categories"}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Mapped Recipes</CardDescription>
-            <CardTitle className="text-3xl font-bold">
-              {isSquareConnected ? `${mappedRecipeCount} / ${soldCatalogItemCount} mapped` : "Connect Square"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {isSquareConnected ? (
-              <>
-                <Progress value={mappingProgress} className="h-2" />
-                <p className="text-xs text-muted-foreground">
-                  {soldCatalogItemCount > 0
-                    ? `${mappingProgress}% of sold menu items have recipe mappings.`
-                    : "Sales synced, but no catalog items found yet."}
-                </p>
-              </>
-            ) : (
-              <Link href="/dashboard/square" className="text-sm font-medium text-foreground hover:underline">
-                Connect Square to calculate mapping coverage
-              </Link>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Forecast Confidence</CardDescription>
-            <CardTitle className={cn("text-3xl font-bold", confidenceVisual.colorClass)}>
-              {averageConfidence === null ? "Not yet available" : `${Math.round(averageConfidence)}%`}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <span className={cn("inline-flex rounded-full px-2 py-1 text-xs font-medium", confidenceVisual.pillClass)}>
-              {confidenceVisual.text}
-            </span>
-            <p className="text-xs text-muted-foreground">
-              Based on {todaysForecastRows.length.toLocaleString()} forecast item
-              {todaysForecastRows.length === 1 ? "" : "s"} for today.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Last Square Sync</CardDescription>
-            <CardTitle className="text-3xl font-bold">
-              {lastSyncedAt ? formatDistanceToNow(lastSyncedAt, { addSuffix: true }) : "Not connected"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className={cn("h-2 w-2 rounded-full", syncIndicatorClass)} />
-              <span className="capitalize">{syncStatus === "not_connected" ? "Not connected" : syncStatus}</span>
-            </div>
-            {!isSquareConnected ? (
-              <Link href="/dashboard/square" className="text-sm font-medium text-foreground hover:underline">
-                Set up Square integration
-              </Link>
-            ) : null}
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest operational actions across orders, stock checks, mapping, imports, and syncs.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {recentActivity.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border p-6 text-sm text-muted-foreground">
-                No recent activity yet. Start by importing data or syncing Square to populate this timeline.
-              </div>
-            ) : (
-              <ul className="relative ml-3 border-l border-border pl-5">
-                {recentActivity.map((activity) => {
-                  const Icon = ACTIVITY_ICON[activity.kind];
-
-                  return (
-                    <li key={activity.id} className="relative pb-5 last:pb-0">
-                      <span className="absolute -left-[29px] top-0.5 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card">
-                        <Icon className="h-3 w-3 text-muted-foreground" />
-                      </span>
-                      <p className="text-sm font-medium text-foreground">{activity.description}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {activity.actorName} • {formatDistanceToNow(activity.occurredAt, { addSuffix: true })}
-                      </p>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Attention Needed</CardTitle>
-            <CardDescription>Prioritized actions to keep your data and forecasting pipeline healthy.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {attentionItems.length === 0 ? (
-              <div className="flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900/60 dark:bg-emerald-900/20">
-                <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                <div>
-                  <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">All caught up!</p>
-                  <p className="text-xs text-emerald-700/80 dark:text-emerald-300/80">
-                    Nothing needs attention right now.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              attentionItems.map((item) => {
-                const Icon = item.icon;
-                const toneClass =
-                  item.tone === "error"
-                    ? "border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300"
-                    : item.tone === "warning"
-                      ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-300"
-                      : "border-border bg-secondary text-foreground";
-
-                return (
-                  <div key={item.id} className={cn("rounded-lg border p-4", toneClass)}>
-                    <div className="flex items-start gap-3">
-                      <Icon className="mt-0.5 h-4 w-4 shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium">{item.message}</p>
-                        {item.href ? (
-                          <Button asChild size="sm" variant="outline" className="mt-3">
-                            <Link href={item.href}>
-                              {item.actionLabel ?? "Review"}
-                              <ArrowRight className="ml-1 h-3 w-3" />
-                            </Link>
-                          </Button>
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </CardContent>
-        </Card>
-      </section>
-
-      <section>
-        <Card>
-          <CardHeader>
-            <CardTitle>Inventory by Category</CardTitle>
-            <CardDescription>
-              Distribution of active inventory items by category, with optional sales usage if Square data is available.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {inventoryByCategory.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border p-8 text-center">
-                <PackageSearch className="mx-auto mb-2 h-6 w-6 text-muted-foreground" />
-                <p className="text-sm font-medium text-foreground">No inventory categories yet</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Add inventory items or import a sheet to generate category analytics.
-                </p>
-                <div className="mt-4 flex flex-wrap justify-center gap-2">
-                  <Button asChild size="sm">
-                    <Link href="/dashboard/import">Import Data</Link>
-                  </Button>
-                  <Button asChild size="sm" variant="outline">
-                    <Link href="/dashboard/inventory">Go to Inventory</Link>
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <OverviewCategoryCharts
-                inventoryData={inventoryByCategory}
-                usageData={usageByCategory.length > 0 ? usageByCategory : null}
-              />
-            )}
-          </CardContent>
-        </Card>
-      </section>
-
-      {syncStatus === "error" && syncErrorMessage ? (
-        <Card className="border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-900/20">
-          <CardContent className="flex items-start gap-3 p-4">
-            <TriangleAlert className="mt-0.5 h-5 w-5 text-red-600 dark:text-red-300" />
-            <div>
-              <p className="text-sm font-semibold text-red-700 dark:text-red-300">Square sync needs attention</p>
-              <p className="text-xs text-red-700/80 dark:text-red-300/80">{syncErrorMessage}</p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : null}
-    </div>
+    <OverviewDashboard
+      performanceTitle="Performance"
+      performanceFilters={performanceFilters}
+      chartData={chartData}
+      primaryKpi={primaryKpi}
+      secondaryKpis={secondaryKpis}
+      offerDescription={offerDescription}
+      offerActionLabel={offerActionLabel}
+      offerActionHref={offerActionHref}
+      syncStatusLabel={syncStatusLabel}
+      syncStatusTone={syncStatusTone}
+      syncValue={formatCurrency(grossSales)}
+      quickActions={quickActions}
+      latestActivity={latestActivity}
+      topAttention={topAttention}
+    />
   );
 }

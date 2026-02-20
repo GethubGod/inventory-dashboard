@@ -1,7 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock Next.js modules
 vi.mock("next/link", () => ({
   default: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) => (
     <a href={href} {...props}>
@@ -15,9 +15,14 @@ vi.mock("next/navigation", () => ({
   usePathname: () => mockPathname,
 }));
 
-// Mock sheet to just render children
 vi.mock("@/components/ui/sheet", () => ({
-  Sheet: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Sheet: ({
+    children,
+    open,
+  }: {
+    children: React.ReactNode;
+    open?: boolean;
+  }) => (open ? <div>{children}</div> : null),
   SheetContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   SheetTitle: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
 }));
@@ -28,7 +33,6 @@ import { SidebarProvider } from "@/components/layout/sidebar-provider";
 afterEach(cleanup);
 
 beforeEach(() => {
-  // Ensure localStorage is available in jsdom
   const store: Record<string, string> = {};
   vi.stubGlobal("localStorage", {
     getItem: vi.fn((key: string) => store[key] ?? null),
@@ -56,47 +60,49 @@ function renderSidebar(pathname = "/dashboard/overview") {
 }
 
 describe("Sidebar", () => {
-  it("renders the Babytuna logo", () => {
+  it("renders grouped nav and can expand/collapse a group", async () => {
+    const user = userEvent.setup();
     renderSidebar();
-    expect(screen.getAllByText("BT").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Babytuna").length).toBeGreaterThan(0);
+
+    expect(screen.getByRole("button", { name: "Main group" })).toBeInTheDocument();
+    const operationsGroup = screen.getByRole("button", { name: "Operations group" });
+
+    expect(screen.getByRole("link", { name: "Overview" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Inventory" })).not.toBeInTheDocument();
+
+    await user.click(operationsGroup);
+    expect(screen.getByRole("link", { name: "Inventory" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Overview" })).not.toBeInTheDocument();
+
+    await user.click(operationsGroup);
+    expect(screen.queryByRole("link", { name: "Inventory" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Overview" })).not.toBeInTheDocument();
   });
 
-  it("renders all nav section headers", () => {
-    renderSidebar();
-    for (const title of ["Main", "Data", "Integrations", "Analytics", "Settings"]) {
-      expect(screen.getAllByText(title).length).toBeGreaterThanOrEqual(1);
-    }
+  it("keeps the active child route group expanded", () => {
+    renderSidebar("/dashboard/settings/preferences");
+
+    expect(screen.getByRole("link", { name: "Preferences" })).toBeInTheDocument();
   });
 
-  it("renders nav links for all items", () => {
-    renderSidebar();
-    const links = screen.getAllByRole("link");
-    expect(links.length).toBeGreaterThanOrEqual(13);
-  });
-
-  it("highlights the active route", () => {
+  it("highlights the active child route", () => {
     renderSidebar("/dashboard/inventory");
-    const inventoryLinks = screen.getAllByText("Inventory");
-    const hasActive = inventoryLinks.some((el) => {
-      const link = el.closest("a");
-      return link?.className.includes("bg-secondary") && link?.className.includes("text-foreground");
-    });
-    expect(hasActive).toBe(true);
+    const inventoryLink = screen.getByRole("link", { name: "Inventory" });
+    expect(inventoryLink.getAttribute("aria-current")).toBe("page");
   });
 
-  it("shows 'Soon' badge for coming-soon items", () => {
+  it("renders Launch app label and does not render Connect Square label", () => {
     renderSidebar();
-    const soonBadges = screen.getAllByText("Soon");
-    expect(soonBadges.length).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: "Launch app" })).toBeInTheDocument();
+    expect(screen.queryByText("Connect Square")).not.toBeInTheDocument();
   });
 
-  it("uses semantic color tokens (no hardcoded teal/slate)", () => {
-    const { container } = renderSidebar();
-    const allClassNames = container.innerHTML;
-    expect(allClassNames).not.toContain("bg-teal");
-    expect(allClassNames).not.toContain("text-teal");
-    expect(allClassNames).not.toContain("bg-slate");
-    expect(allClassNames).not.toContain("text-slate");
+  it("renders the sidebar search bar and utility icon buttons", () => {
+    renderSidebar();
+    expect(screen.getByRole("textbox", { name: /search navigation/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open notifications" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open messages" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open help" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open shortcuts" })).toBeInTheDocument();
   });
 });

@@ -19,47 +19,65 @@ export type DashboardNavItem = {
   label: string;
   href: string;
   icon: LucideIcon;
-  comingSoon?: boolean;
 };
 
-export type DashboardNavSection = {
-  title: string;
+export type DashboardNavGroup = {
+  id: string;
+  label: string;
+  icon: LucideIcon;
   items: DashboardNavItem[];
 };
 
-export const DASHBOARD_NAV_SECTIONS: DashboardNavSection[] = [
+export const DASHBOARD_NAV_GROUPS: DashboardNavGroup[] = [
   {
-    title: "Main",
+    id: "main",
+    label: "Main",
+    icon: LayoutDashboard,
     items: [
       { label: "Overview", href: "/dashboard/overview", icon: LayoutDashboard },
-      { label: "Inventory", href: "/dashboard/inventory", icon: Package },
-      { label: "Forecasts", href: "/dashboard/forecasts", icon: TrendingUp, comingSoon: true },
     ],
   },
   {
-    title: "Data",
+    id: "operations",
+    label: "Operations",
+    icon: Package,
     items: [
+      { label: "Inventory", href: "/dashboard/inventory", icon: Package },
       { label: "Import Data", href: "/dashboard/import", icon: Upload },
-      { label: "Recipes", href: "/dashboard/recipes", icon: ChefHat },
-      { label: "Calibration", href: "/dashboard/calibration", icon: Target, comingSoon: true },
+      { label: "Calibration", href: "/dashboard/calibration", icon: Target },
     ],
   },
   {
-    title: "Integrations",
+    id: "recipes",
+    label: "Recipes",
+    icon: ChefHat,
+    items: [
+      { label: "Recipes", href: "/dashboard/recipes", icon: ChefHat },
+      { label: "Forecasts", href: "/dashboard/forecasts", icon: TrendingUp },
+    ],
+  },
+  {
+    id: "integrations",
+    label: "Integrations",
+    icon: CreditCard,
     items: [
       { label: "Square POS", href: "/dashboard/square", icon: CreditCard },
-      { label: "Mobile App", href: "/dashboard/app-connection", icon: Smartphone, comingSoon: true },
+      { label: "Mobile App", href: "/dashboard/app-connection", icon: Smartphone },
     ],
   },
   {
-    title: "Analytics",
+    id: "analytics",
+    label: "Analytics",
+    icon: BarChart3,
     items: [
-      { label: "Sales Analytics", href: "/dashboard/analytics", icon: BarChart3, comingSoon: true },
-      { label: "Accuracy", href: "/dashboard/accuracy", icon: Crosshair, comingSoon: true },
+      { label: "Sales Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+      { label: "Accuracy", href: "/dashboard/accuracy", icon: Crosshair },
     ],
   },
   {
-    title: "Settings",
+    id: "settings",
+    label: "Settings",
+    icon: Settings,
     items: [
       { label: "Organization", href: "/dashboard/settings/organization", icon: Building2 },
       { label: "Users & Roles", href: "/dashboard/settings/users", icon: Users },
@@ -68,7 +86,7 @@ export const DASHBOARD_NAV_SECTIONS: DashboardNavSection[] = [
   },
 ];
 
-export const DASHBOARD_NAV_ITEMS = DASHBOARD_NAV_SECTIONS.flatMap((section) => section.items);
+export const DASHBOARD_NAV_ITEMS = DASHBOARD_NAV_GROUPS.flatMap((group) => group.items);
 
 export const DASHBOARD_NAV_BY_HREF = new Map(
   DASHBOARD_NAV_ITEMS.map((item) => [item.href, item] as const),
@@ -80,4 +98,8 @@ export function isActiveRoute(pathname: string, href: string) {
   }
 
   return pathname.startsWith(`${href}/`);
+}
+
+export function isGroupActive(pathname: string, group: DashboardNavGroup) {
+  return group.items.some((item) => isActiveRoute(pathname, item.href));
 }

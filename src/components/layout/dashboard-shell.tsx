@@ -1,41 +1,14 @@
 "use client";
 
-import { Header } from "@/components/layout/header";
-import { PageTransition } from "@/components/layout/page-transition";
-import { Sidebar } from "@/components/layout/sidebar";
+import { AppShell } from "@/components/layout/app-shell";
 import {
   SidebarProvider,
-  useSidebarState,
 } from "@/components/layout/sidebar-provider";
-import { cn } from "@/lib/utils";
-
-function DashboardShellInner({ children }: { children: React.ReactNode }) {
-  const { desktopCollapsed } = useSidebarState();
-
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Sidebar />
-      <div
-        className={cn(
-          "flex min-h-screen flex-col transition-[padding-left] duration-200 ease-in-out",
-          desktopCollapsed ? "lg:pl-[68px]" : "lg:pl-[260px]",
-        )}
-      >
-        <Header />
-        <main className="flex-1 px-4 py-6 lg:px-8 lg:py-8">
-          <div className="mx-auto w-full max-w-[1400px]">
-            <PageTransition>{children}</PageTransition>
-          </div>
-        </main>
-      </div>
-    </div>
-  );
-}
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
-      <DashboardShellInner>{children}</DashboardShellInner>
+      <AppShell>{children}</AppShell>
     </SidebarProvider>
   );
 }

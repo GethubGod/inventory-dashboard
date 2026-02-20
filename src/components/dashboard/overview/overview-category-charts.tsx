@@ -98,7 +98,7 @@ export function OverviewCategoryCharts({ inventoryData, usageData }: OverviewCat
           <div>
             <p className="text-sm font-medium text-foreground">Usage data not available yet</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Connect Square and sync sales to unlock usage analytics by category.
+              Launch app and sync sales to unlock usage analytics by category.
             </p>
           </div>
         </div>

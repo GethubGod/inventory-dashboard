@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { DASHBOARD_NAV_SECTIONS, isActiveRoute } from "@/components/layout/dashboard-nav";
+import {
+  DASHBOARD_NAV_GROUPS,
+  DASHBOARD_NAV_ITEMS,
+  isActiveRoute,
+  isGroupActive,
+} from "@/components/layout/dashboard-nav";
 
 describe("isActiveRoute", () => {
   it("returns true for exact match", () => {
@@ -19,15 +24,26 @@ describe("isActiveRoute", () => {
   });
 });
 
-describe("DASHBOARD_NAV_SECTIONS", () => {
-  it("has Main, Data, Integrations, Analytics, Settings sections", () => {
-    const titles = DASHBOARD_NAV_SECTIONS.map((s) => s.title);
-    expect(titles).toEqual(["Main", "Data", "Integrations", "Analytics", "Settings"]);
+describe("DASHBOARD_NAV_GROUPS", () => {
+  it("matches the grouped structure", () => {
+    const labels = DASHBOARD_NAV_GROUPS.map((group) => group.label);
+    expect(labels).toEqual([
+      "Main",
+      "Operations",
+      "Recipes",
+      "Integrations",
+      "Analytics",
+      "Settings",
+    ]);
   });
 
-  it("every item has label, href, and icon", () => {
-    for (const section of DASHBOARD_NAV_SECTIONS) {
-      for (const item of section.items) {
+  it("every child has label, href, and icon", () => {
+    for (const group of DASHBOARD_NAV_GROUPS) {
+      expect(group.id).toBeTruthy();
+      expect(group.label).toBeTruthy();
+      expect(group.icon).toBeDefined();
+
+      for (const item of group.items) {
         expect(item.label).toBeTruthy();
         expect(item.href).toMatch(/^\/dashboard\//);
         expect(item.icon).toBeDefined();
@@ -35,8 +51,23 @@ describe("DASHBOARD_NAV_SECTIONS", () => {
     }
   });
 
-  it("marks forecast-related items as comingSoon", () => {
-    const forecastItem = DASHBOARD_NAV_SECTIONS.flatMap((s) => s.items).find((i) => i.label === "Forecasts");
-    expect(forecastItem?.comingSoon).toBe(true);
+  it("keeps nav index aligned to grouped items", () => {
+    const flattenedCount = DASHBOARD_NAV_GROUPS.flatMap((group) => group.items).length;
+    expect(DASHBOARD_NAV_ITEMS).toHaveLength(flattenedCount);
   });
 });
+
+describe("isGroupActive", () => {
+  it("returns true when any child in group is active", () => {
+    const operations = DASHBOARD_NAV_GROUPS.find((group) => group.id === "operations");
+    expect(operations).toBeDefined();
+    expect(isGroupActive("/dashboard/import", operations!)).toBe(true);
+  });
+
+  it("returns false when no child is active", () => {
+    const analytics = DASHBOARD_NAV_GROUPS.find((group) => group.id === "analytics");
+    expect(analytics).toBeDefined();
+    expect(isGroupActive("/dashboard/settings/preferences", analytics!)).toBe(false);
+  });
+});
+
