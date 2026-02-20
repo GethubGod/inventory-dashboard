@@ -11,7 +11,7 @@ export default function OnboardingPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted-foreground">
             Create an organization and membership row in Supabase, then reload to enter the dashboard.
           </p>
         </CardContent>

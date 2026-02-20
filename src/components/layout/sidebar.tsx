@@ -22,19 +22,19 @@ function SidebarNav({ collapsed, onNavigate }: SidebarNavProps) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-4">
+    <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
       {DASHBOARD_NAV_SECTIONS.map((section) => (
-        <div key={section.title} className="space-y-2">
+        <div key={section.title} className="space-y-1">
           <p
             className={cn(
-              "px-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500",
+              "px-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground",
               collapsed && "sr-only",
             )}
           >
             {section.title}
           </p>
 
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {section.items.map((item) => {
               const active = isActiveRoute(pathname, item.href);
               return (
@@ -70,14 +70,14 @@ function SidebarNavItem({ item, active, collapsed, onNavigate }: SidebarNavItemP
       onClick={onNavigate}
       title={collapsed ? item.label : undefined}
       className={cn(
-        "group relative flex h-10 items-center rounded-lg border px-2.5 text-sm font-medium transition-all duration-200",
+        "group relative flex h-9 items-center rounded-lg px-3 text-sm font-medium transition-colors",
         collapsed ? "justify-center" : "justify-start",
         active
-          ? "border-[#0d9488]/20 bg-[#0d9488]/10 text-[#0d9488] dark:border-[#0d9488]/30 dark:bg-[#0d9488]/20 dark:text-teal-300"
-          : "border-transparent text-slate-600 hover:border-slate-200 hover:bg-white hover:text-slate-900 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-900 dark:hover:text-slate-100",
+          ? "bg-secondary text-foreground"
+          : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
       )}
     >
-      <Icon className="h-4 w-4 shrink-0" />
+      <Icon className="h-[18px] w-[18px] shrink-0" />
 
       <span
         className={cn(
@@ -89,13 +89,13 @@ function SidebarNavItem({ item, active, collapsed, onNavigate }: SidebarNavItemP
       </span>
 
       {item.comingSoon && !collapsed ? (
-        <span className="ml-auto rounded-full border border-slate-300 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
-          Coming Soon
+        <span className="ml-auto rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+          Soon
         </span>
       ) : null}
 
       {item.comingSoon && collapsed ? (
-        <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-slate-400 dark:bg-slate-500" />
+        <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-border" />
       ) : null}
     </Link>
   );
@@ -108,41 +108,43 @@ export function Sidebar() {
     <>
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 hidden border-r border-slate-200/80 bg-slate-100/95 backdrop-blur transition-[width] duration-200 ease-in-out dark:border-slate-800 dark:bg-[#0f172a]/95 lg:flex lg:flex-col",
-          desktopCollapsed ? "w-[68px]" : "w-[280px]",
+          "fixed inset-y-0 left-0 z-40 hidden border-r border-border bg-card transition-[width] duration-200 ease-in-out lg:flex lg:flex-col",
+          desktopCollapsed ? "w-[68px]" : "w-[260px]",
         )}
       >
         <div
           className={cn(
-            "flex h-16 items-center border-b border-slate-200/80 px-4 dark:border-slate-800",
+            "flex h-14 items-center border-b border-border px-4",
             desktopCollapsed ? "justify-center" : "justify-start",
           )}
         >
           <Link
             href="/dashboard/overview"
             className={cn(
-              "inline-flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-100",
+              "inline-flex items-center gap-2.5 font-semibold text-foreground",
               desktopCollapsed && "justify-center",
             )}
           >
-            <span className="text-xl leading-none">🐟</span>
-            {!desktopCollapsed ? <span className="text-base">Babytuna</span> : null}
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
+              BT
+            </span>
+            {!desktopCollapsed ? <span className="text-[15px]">Babytuna</span> : null}
           </Link>
         </div>
 
         <SidebarNav collapsed={desktopCollapsed} />
 
-        <div className="border-t border-slate-200/80 p-2 dark:border-slate-800">
+        <div className="border-t border-border p-2">
           <button
             type="button"
             onClick={toggleDesktopCollapsed}
             className={cn(
-              "flex h-10 w-full items-center rounded-lg border border-transparent text-sm font-medium text-slate-600 transition-colors hover:border-slate-200 hover:bg-white hover:text-slate-900 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-900 dark:hover:text-slate-100",
-              desktopCollapsed ? "justify-center" : "justify-start px-2.5",
+              "flex h-9 w-full items-center rounded-lg text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground",
+              desktopCollapsed ? "justify-center" : "justify-start px-3",
             )}
           >
-            {desktopCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-            {!desktopCollapsed ? <span className="ml-3">Collapse Sidebar</span> : null}
+            {desktopCollapsed ? <PanelLeftOpen className="h-[18px] w-[18px]" /> : <PanelLeftClose className="h-[18px] w-[18px]" />}
+            {!desktopCollapsed ? <span className="ml-3">Collapse</span> : null}
           </button>
         </div>
       </aside>
@@ -150,13 +152,15 @@ export function Sidebar() {
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent
           side="left"
-          className="w-[280px] border-slate-200/80 bg-slate-100 p-0 dark:border-slate-800 dark:bg-[#0f172a]"
+          className="w-[260px] border-border bg-card p-0"
         >
           <SheetTitle className="sr-only">Dashboard Navigation</SheetTitle>
-          <div className="flex h-16 items-center border-b border-slate-200/80 px-4 dark:border-slate-800">
-            <Link href="/dashboard/overview" className="inline-flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-100">
-              <span className="text-xl leading-none">🐟</span>
-              <span className="text-base">Babytuna</span>
+          <div className="flex h-14 items-center border-b border-border px-4">
+            <Link href="/dashboard/overview" className="inline-flex items-center gap-2.5 font-semibold text-foreground">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
+                BT
+              </span>
+              <span className="text-[15px]">Babytuna</span>
             </Link>
           </div>
           <SidebarNav collapsed={false} onNavigate={() => setMobileOpen(false)} />

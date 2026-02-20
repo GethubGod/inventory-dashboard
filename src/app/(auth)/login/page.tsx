@@ -53,9 +53,9 @@ export default function LoginPage() {
   });
 
   return (
-    <Card className="border-slate-200 bg-white">
+    <Card className="border-border bg-card">
       <CardHeader>
-        <CardTitle className="text-[#0f172a]">Log in</CardTitle>
+        <CardTitle className="text-foreground">Log in</CardTitle>
         <CardDescription>Use your Babytuna account to access the dashboard.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -72,13 +72,13 @@ export default function LoginPage() {
             {errors.password ? <p className="text-sm text-red-600">{errors.password.message}</p> : null}
           </div>
 
-          <Button type="submit" className="w-full bg-[#0f172a] hover:bg-slate-800" disabled={isSubmitting}>
+          <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isSubmitting}>
             {isSubmitting ? "Signing in..." : "Sign in"}
           </Button>
 
-          <p className="text-center text-sm text-slate-500">
+          <p className="text-center text-sm text-muted-foreground">
             New to Babytuna?{" "}
-            <Link className="font-medium text-[#0d9488] hover:underline" href="/signup">
+            <Link className="font-medium text-foreground hover:underline" href="/signup">
               Create an account
             </Link>
           </p>

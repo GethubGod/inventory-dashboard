@@ -138,7 +138,7 @@ const categoryBadgeClassMap: Record<ItemCategory, string> = {
   sauces:
     "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-900/40 dark:bg-orange-950/40 dark:text-orange-300",
   packaging:
-    "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300",
+    "border-border bg-secondary text-muted-foreground",
   alcohol:
     "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-900/40 dark:bg-purple-950/40 dark:text-purple-300",
 };
@@ -147,7 +147,7 @@ const supplierCategoryBadgeClassMap: Record<SupplierCategory, string> = {
   fish_supplier:
     "border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-cyan-900/40 dark:bg-cyan-950/30 dark:text-cyan-300",
   main_distributor:
-    "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300",
+    "border-border bg-secondary text-muted-foreground",
   asian_market:
     "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-900/40 dark:bg-orange-950/30 dark:text-orange-300",
 };
@@ -279,7 +279,7 @@ function SortHeader({ column, title }: { column: Column<InventoryTableItem, unkn
   return (
     <button
       type="button"
-      className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500 transition-colors hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+      className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
       onClick={() => column.toggleSorting(sortingState === "asc")}
     >
       <span>{title}</span>
@@ -323,7 +323,7 @@ function IndeterminateCheckbox({
       onChange={onChange}
       onClick={onClick}
       aria-label={ariaLabel}
-      className="h-4 w-4 rounded border-slate-300 text-[#0d9488] focus:ring-[#0d9488]/40 dark:border-slate-600 dark:bg-slate-900"
+      className="h-4 w-4 rounded border-border text-primary focus:ring-primary/40"
     />
   );
 }
@@ -364,12 +364,12 @@ function InventoryItemSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full overflow-y-auto border-slate-200 p-0 sm:max-w-xl dark:border-slate-800">
-        <div className="sticky top-0 z-10 border-b border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
-          <SheetTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+      <SheetContent side="right" className="w-full overflow-y-auto border-border p-0 sm:max-w-xl">
+        <div className="sticky top-0 z-10 border-b border-border bg-card px-6 py-4">
+          <SheetTitle className="text-lg font-semibold text-foreground">
             {editingItem ? "Edit item" : "Add item"}
           </SheetTitle>
-          <SheetDescription className="text-sm text-slate-500 dark:text-slate-400">
+          <SheetDescription className="text-sm text-muted-foreground">
             {editingItem
               ? "Update inventory item details and supplier mapping."
               : "Create a new inventory item for this organization."}
@@ -478,7 +478,7 @@ function InventoryItemSheet({
                   className="w-full justify-between font-normal"
                 >
                   <span className="truncate">{selectedSupplierLabel}</span>
-                  <ChevronsLeftRight className="h-4 w-4 text-slate-500" />
+                  <ChevronsLeftRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="start" className="w-[360px] p-0">
@@ -534,10 +534,10 @@ function InventoryItemSheet({
             ) : null}
           </div>
 
-          <div className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-3 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center justify-between rounded-md border border-border bg-secondary px-3 py-3">
             <div>
-              <p className="text-sm font-medium text-slate-800 dark:text-slate-200">Item status</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Inactive items stay in history but are excluded from active workflows.</p>
+              <p className="text-sm font-medium text-foreground">Item status</p>
+              <p className="text-xs text-muted-foreground">Inactive items stay in history but are excluded from active workflows.</p>
             </div>
             <Switch
               checked={form.watch("active")}
@@ -545,7 +545,7 @@ function InventoryItemSheet({
             />
           </div>
 
-          <div className="flex justify-end gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
+          <div className="flex justify-end gap-2 border-t border-border pt-4">
             <Button
               type="button"
               variant="outline"
@@ -554,7 +554,7 @@ function InventoryItemSheet({
             >
               Cancel
             </Button>
-            <Button type="submit" className="bg-[#0f172a] hover:bg-slate-800" disabled={isPending}>
+            <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={isPending}>
               {isPending ? "Saving..." : editingItem ? "Save Changes" : "Create Item"}
             </Button>
           </div>
@@ -996,8 +996,8 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
         header: ({ column }) => <SortHeader column={column} title="Name" />,
         cell: ({ row }) => (
           <div className="min-w-[220px]">
-            <p className="truncate font-semibold text-slate-900 dark:text-slate-100">{row.original.name}</p>
-            <p className="truncate text-xs text-slate-500 dark:text-slate-400">ID: {row.original.id}</p>
+            <p className="truncate font-semibold text-foreground">{row.original.name}</p>
+            <p className="truncate text-xs text-muted-foreground">ID: {row.original.id}</p>
           </div>
         ),
         size: 300,
@@ -1029,7 +1029,7 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
               {labelForSupplierCategory(row.original.supplierCategory)}
             </Badge>
           ) : (
-            <span className="text-xs text-slate-400 dark:text-slate-500">Unspecified</span>
+            <span className="text-xs text-muted-foreground">Unspecified</span>
           ),
         size: 170,
       },
@@ -1045,7 +1045,7 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
         accessorKey: "packUnit",
         header: ({ column }) => <SortHeader column={column} title="Pack Unit" />,
         cell: ({ row }) => (
-          <span className="text-slate-700 dark:text-slate-300">{row.original.packUnit ?? "-"}</span>
+          <span className="text-muted-foreground">{row.original.packUnit ?? "-"}</span>
         ),
         size: 100,
       },
@@ -1064,7 +1064,7 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
           row.original.supplierName ? (
             <span className="truncate">{row.original.supplierName}</span>
           ) : (
-            <span className="text-slate-400 dark:text-slate-500">Unassigned</span>
+            <span className="text-muted-foreground">Unassigned</span>
           ),
         size: 170,
       },
@@ -1381,23 +1381,23 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
 
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             Inventory
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Manage your ingredient catalog</p>
+          <p className="text-sm text-muted-foreground">Manage your ingredient catalog</p>
         </div>
 
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            className="border-slate-200 bg-white hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800"
+            className="border-border bg-card hover:bg-secondary"
             onClick={handleCsvExport}
           >
             Export CSV
           </Button>
 
           <Button
-            className="bg-[#0f172a] hover:bg-slate-800"
+            className="bg-primary hover:bg-primary/90"
             onClick={() => {
               setEditingItem(null);
               setSheetOpen(true);
@@ -1409,11 +1409,11 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
         </div>
       </header>
 
-      <Card className="border-slate-200 dark:border-slate-800">
+      <Card className="border-border">
         <CardHeader className="space-y-4">
           <div className="grid gap-3 lg:grid-cols-[minmax(320px,1fr)_220px_220px_auto]">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
+              <Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
               <Input
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
@@ -1430,7 +1430,7 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                       ? "All categories"
                       : `${selectedCategories.length} categor${selectedCategories.length === 1 ? "y" : "ies"}`}
                   </span>
-                  <ChevronDown className="h-4 w-4 text-slate-500" />
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-64">
@@ -1474,15 +1474,15 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
               </SelectContent>
             </Select>
 
-            <div className="inline-flex h-10 rounded-md border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900">
+            <div className="inline-flex h-10 rounded-md border border-border bg-card p-1">
               <button
                 type="button"
                 onClick={() => setStatusFilter("active")}
                 className={cn(
                   "rounded px-3 text-sm font-medium transition-colors",
                   statusFilter === "active"
-                    ? "bg-[#0d9488]/15 text-[#0d9488]"
-                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200",
+                    ? "bg-primary/15 text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 Active
@@ -1493,8 +1493,8 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                 className={cn(
                   "rounded px-3 text-sm font-medium transition-colors",
                   statusFilter === "inactive"
-                    ? "bg-[#0d9488]/15 text-[#0d9488]"
-                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200",
+                    ? "bg-primary/15 text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 Inactive
@@ -1509,12 +1509,12 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
 
         <CardContent className="space-y-4">
           {selectedIds.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-[#0d9488]/30 bg-[#0d9488]/10 px-3 py-2 text-sm text-slate-700 dark:text-slate-200">
+            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-foreground">
               <span className="font-medium">{selectedIds.length} items selected</span>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="outline" className="border-current/30 bg-white/70 dark:bg-slate-900">
+                  <Button size="sm" variant="outline" className="border-current/30 bg-card/70">
                     Assign Supplier
                   </Button>
                 </DropdownMenuTrigger>
@@ -1532,7 +1532,7 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="outline" className="border-current/30 bg-white/70 dark:bg-slate-900">
+                  <Button size="sm" variant="outline" className="border-current/30 bg-card/70">
                     Change Category
                   </Button>
                 </DropdownMenuTrigger>
@@ -1547,7 +1547,7 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button size="sm" variant="outline" className="border-current/30 bg-white/70 dark:bg-slate-900" onClick={handleBulkDeactivate}>
+              <Button size="sm" variant="outline" className="border-current/30 bg-card/70" onClick={handleBulkDeactivate}>
                 Deactivate
               </Button>
 
@@ -1566,13 +1566,13 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
             </div>
           ) : filteredItems.length === 0 ? (
             items.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center dark:border-slate-700 dark:bg-slate-900">
-                <p className="text-sm font-medium text-slate-800 dark:text-slate-200">No inventory items yet.</p>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              <div className="rounded-xl border border-dashed border-border bg-secondary p-10 text-center ">
+                <p className="text-sm font-medium text-foreground">No inventory items yet.</p>
+                <p className="mt-1 text-sm text-muted-foreground">
                   Add your first item to get started.
                 </p>
                 <Button
-                  className="mt-4 bg-[#0f172a] hover:bg-slate-800"
+                  className="mt-4 bg-primary hover:bg-primary/90"
                   onClick={() => {
                     setEditingItem(null);
                     setSheetOpen(true);
@@ -1583,9 +1583,9 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                 </Button>
               </div>
             ) : (
-              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center dark:border-slate-700 dark:bg-slate-900">
-                <p className="text-sm font-medium text-slate-800 dark:text-slate-200">No items match your filters.</p>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              <div className="rounded-xl border border-dashed border-border bg-secondary p-10 text-center ">
+                <p className="text-sm font-medium text-foreground">No items match your filters.</p>
+                <p className="mt-1 text-sm text-muted-foreground">
                   Try adjusting search text, categories, or status.
                 </p>
                 <Button
@@ -1603,9 +1603,9 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
               </div>
             )
           ) : (
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800">
+            <div className="rounded-xl border border-border">
               <Table>
-                <TableHeader className="bg-slate-50 dark:bg-slate-900/70">
+                <TableHeader className="bg-secondary">
                   {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow key={headerGroup.id} className="hover:bg-transparent">
                       {headerGroup.headers.map((header) => (
@@ -1636,23 +1636,23 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                       </TableRow>
 
                       {row.getIsExpanded() ? (
-                        <TableRow key={`${row.id}-expanded`} className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-900/40 dark:hover:bg-slate-900/40">
+                        <TableRow key={`${row.id}-expanded`} className="bg-secondary/80 hover:bg-secondary/80">
                           <TableCell colSpan={row.getVisibleCells().length} className="py-4">
                             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                               <div>
-                                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                                <p className="text-xs uppercase tracking-wide text-muted-foreground">
                                   Pack Configuration
                                 </p>
-                                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                <p className="text-sm font-medium text-foreground">
                                   {row.original.packSize ?? "-"} {row.original.packUnit ?? ""}
                                 </p>
                               </div>
 
                               <div>
-                                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                                <p className="text-xs uppercase tracking-wide text-muted-foreground">
                                   Supplier Category
                                 </p>
-                                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                <p className="text-sm font-medium text-foreground">
                                   {row.original.supplierCategory
                                     ? labelForSupplierCategory(row.original.supplierCategory)
                                     : "Unspecified"}
@@ -1660,25 +1660,25 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                               </div>
 
                               <div>
-                                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                                <p className="text-xs uppercase tracking-wide text-muted-foreground">
                                   Created
                                 </p>
-                                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                <p className="text-sm font-medium text-foreground">
                                   {formatDateTime(row.original.createdAt)}
                                 </p>
                               </div>
 
                               <div>
-                                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                                <p className="text-xs uppercase tracking-wide text-muted-foreground">
                                   Updated
                                 </p>
-                                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                <p className="text-sm font-medium text-foreground">
                                   {formatDateTime(row.original.updatedAt)}
                                 </p>
                               </div>
                             </div>
 
-                            <div className="mt-3 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                            <div className="mt-3 rounded-md border border-border bg-card px-3 py-2 text-sm text-muted-foreground">
                               {row.original.notes || "No notes added for this item yet."}
                             </div>
                           </TableCell>
@@ -1692,8 +1692,8 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
           )}
 
           {filteredItems.length > 0 ? (
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-3 text-sm dark:border-slate-800">
-              <p className="text-slate-500 dark:text-slate-400">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3 text-sm">
+              <p className="text-muted-foreground">
                 Showing {startItem.toLocaleString()}-{endItem.toLocaleString()} of {totalFilteredCount.toLocaleString()} items
               </p>
 
@@ -1706,7 +1706,7 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                 >
                   Previous
                 </Button>
-                <span className="min-w-[100px] text-center text-slate-500 dark:text-slate-400">
+                <span className="min-w-[100px] text-center text-muted-foreground">
                   Page {table.getState().pagination.pageIndex + 1} of {Math.max(table.getPageCount(), 1)}
                 </span>
                 <Button

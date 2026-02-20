@@ -23,7 +23,7 @@ export function InventorySectionTabs() {
   const pathname = usePathname();
 
   return (
-    <div className="inline-flex h-10 items-center rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+    <div className="inline-flex h-10 items-center rounded-lg border border-border bg-card p-1">
       {TAB_ITEMS.map((tab) => {
         const active = tab.match(pathname);
 
@@ -34,8 +34,8 @@ export function InventorySectionTabs() {
             className={cn(
               "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
               active
-                ? "bg-[#0d9488]/15 text-[#0d9488]"
-                : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100",
+                ? "bg-primary/10 text-foreground"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             {tab.label}

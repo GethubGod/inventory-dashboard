@@ -79,12 +79,12 @@ export function DashboardBreadcrumbs() {
               {index > 0 ? <BreadcrumbSeparator /> : null}
               <BreadcrumbItem>
                 {isLast ? (
-                  <BreadcrumbPage className="text-slate-900 dark:text-slate-100">{crumb.label}</BreadcrumbPage>
+                  <BreadcrumbPage className="text-foreground">{crumb.label}</BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink asChild>
                     <Link
                       href={crumb.href}
-                      className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                      className="text-muted-foreground hover:text-foreground"
                     >
                       {crumb.label}
                     </Link>

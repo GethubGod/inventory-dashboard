@@ -194,8 +194,8 @@ function confidenceTone(score: number | null) {
   if (score === null) {
     return {
       text: "Not yet available",
-      colorClass: "text-slate-500 dark:text-slate-400",
-      pillClass: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+      colorClass: "text-muted-foreground",
+      pillClass: "bg-secondary text-muted-foreground",
     };
   }
 
@@ -203,7 +203,7 @@ function confidenceTone(score: number | null) {
     return {
       text: "Healthy",
       colorClass: "text-emerald-600 dark:text-emerald-400",
-      pillClass: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
+      pillClass: "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
     };
   }
 
@@ -211,14 +211,14 @@ function confidenceTone(score: number | null) {
     return {
       text: "Moderate",
       colorClass: "text-amber-600 dark:text-amber-400",
-      pillClass: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+      pillClass: "bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
     };
   }
 
   return {
     text: "Low",
     colorClass: "text-red-600 dark:text-red-400",
-    pillClass: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+    pillClass: "bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-300",
   };
 }
 
@@ -346,7 +346,7 @@ export default async function OverviewPage() {
         ? "bg-amber-500"
         : syncStatus === "error"
           ? "bg-red-500"
-          : "bg-slate-400";
+          : "bg-muted-foreground";
 
   const recipeCategoriesByCatalog = new Map<string, Set<string>>();
   for (const recipe of recipeRows) {
@@ -632,17 +632,17 @@ export default async function OverviewPage() {
   return (
     <div className="space-y-6">
       <header className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">Overview</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Overview</h1>
+        <p className="text-sm text-muted-foreground">
           Quick health check of inventory coverage, data quality, and sync reliability for your restaurant operation.
         </p>
       </header>
 
       {onboardingPrompt ? (
-        <Card className="border-dashed border-slate-300 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
+        <Card className="border-dashed">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Link2 className="h-4 w-4 text-[#0d9488]" />
+              <Link2 className="h-4 w-4 text-muted-foreground" />
               Welcome to Babytuna Systems
             </CardTitle>
             <CardDescription>
@@ -650,7 +650,7 @@ export default async function OverviewPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
-            <Button asChild size="sm" className="bg-[#0f172a] hover:bg-slate-800">
+            <Button asChild size="sm">
               <Link href="/dashboard/square">Connect Square</Link>
             </Button>
             <Button asChild size="sm" variant="outline">
@@ -664,24 +664,24 @@ export default async function OverviewPage() {
       ) : null}
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+        <Card>
           <CardHeader className="pb-3">
             <CardDescription>Total Inventory Items</CardDescription>
-            <CardTitle className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+            <CardTitle className="text-3xl font-bold">
               {totalInventoryItems.toLocaleString()}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground">
               {uniqueCategoryCount.toLocaleString()} {uniqueCategoryCount === 1 ? "category" : "categories"}
             </p>
           </CardContent>
         </Card>
 
-        <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+        <Card>
           <CardHeader className="pb-3">
             <CardDescription>Mapped Recipes</CardDescription>
-            <CardTitle className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+            <CardTitle className="text-3xl font-bold">
               {isSquareConnected ? `${mappedRecipeCount} / ${soldCatalogItemCount} mapped` : "Connect Square"}
             </CardTitle>
           </CardHeader>
@@ -689,21 +689,21 @@ export default async function OverviewPage() {
             {isSquareConnected ? (
               <>
                 <Progress value={mappingProgress} className="h-2" />
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   {soldCatalogItemCount > 0
                     ? `${mappingProgress}% of sold menu items have recipe mappings.`
                     : "Sales synced, but no catalog items found yet."}
                 </p>
               </>
             ) : (
-              <Link href="/dashboard/square" className="text-sm font-medium text-[#0d9488] hover:underline">
+              <Link href="/dashboard/square" className="text-sm font-medium text-foreground hover:underline">
                 Connect Square to calculate mapping coverage
               </Link>
             )}
           </CardContent>
         </Card>
 
-        <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+        <Card>
           <CardHeader className="pb-3">
             <CardDescription>Forecast Confidence</CardDescription>
             <CardTitle className={cn("text-3xl font-bold", confidenceVisual.colorClass)}>
@@ -714,27 +714,27 @@ export default async function OverviewPage() {
             <span className={cn("inline-flex rounded-full px-2 py-1 text-xs font-medium", confidenceVisual.pillClass)}>
               {confidenceVisual.text}
             </span>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground">
               Based on {todaysForecastRows.length.toLocaleString()} forecast item
               {todaysForecastRows.length === 1 ? "" : "s"} for today.
             </p>
           </CardContent>
         </Card>
 
-        <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+        <Card>
           <CardHeader className="pb-3">
             <CardDescription>Last Square Sync</CardDescription>
-            <CardTitle className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+            <CardTitle className="text-3xl font-bold">
               {lastSyncedAt ? formatDistanceToNow(lastSyncedAt, { addSuffix: true }) : "Not connected"}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className={cn("h-2 w-2 rounded-full", syncIndicatorClass)} />
               <span className="capitalize">{syncStatus === "not_connected" ? "Not connected" : syncStatus}</span>
             </div>
             {!isSquareConnected ? (
-              <Link href="/dashboard/square" className="text-sm font-medium text-[#0d9488] hover:underline">
+              <Link href="/dashboard/square" className="text-sm font-medium text-foreground hover:underline">
                 Set up Square integration
               </Link>
             ) : null}
@@ -750,21 +750,21 @@ export default async function OverviewPage() {
           </CardHeader>
           <CardContent>
             {recentActivity.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+              <div className="rounded-lg border border-dashed border-border p-6 text-sm text-muted-foreground">
                 No recent activity yet. Start by importing data or syncing Square to populate this timeline.
               </div>
             ) : (
-              <ul className="relative ml-3 border-l border-slate-200 pl-5 dark:border-slate-700">
+              <ul className="relative ml-3 border-l border-border pl-5">
                 {recentActivity.map((activity) => {
                   const Icon = ACTIVITY_ICON[activity.kind];
 
                   return (
                     <li key={activity.id} className="relative pb-5 last:pb-0">
-                      <span className="absolute -left-[29px] top-0.5 flex h-5 w-5 items-center justify-center rounded-full border border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900">
-                        <Icon className="h-3 w-3 text-slate-500 dark:text-slate-300" />
+                      <span className="absolute -left-[29px] top-0.5 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card">
+                        <Icon className="h-3 w-3 text-muted-foreground" />
                       </span>
-                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{activity.description}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                      <p className="text-sm font-medium text-foreground">{activity.description}</p>
+                      <p className="text-xs text-muted-foreground">
                         {activity.actorName} • {formatDistanceToNow(activity.occurredAt, { addSuffix: true })}
                       </p>
                     </li>
@@ -799,7 +799,7 @@ export default async function OverviewPage() {
                     ? "border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300"
                     : item.tone === "warning"
                       ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-300"
-                      : "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200";
+                      : "border-border bg-secondary text-foreground";
 
                 return (
                   <div key={item.id} className={cn("rounded-lg border p-4", toneClass)}>
@@ -808,7 +808,7 @@ export default async function OverviewPage() {
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium">{item.message}</p>
                         {item.href ? (
-                          <Button asChild size="sm" variant="outline" className="mt-3 border-current/30 bg-transparent">
+                          <Button asChild size="sm" variant="outline" className="mt-3">
                             <Link href={item.href}>
                               {item.actionLabel ?? "Review"}
                               <ArrowRight className="ml-1 h-3 w-3" />
@@ -835,14 +835,14 @@ export default async function OverviewPage() {
           </CardHeader>
           <CardContent>
             {inventoryByCategory.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 text-center dark:border-slate-700 dark:bg-slate-900">
-                <PackageSearch className="mx-auto mb-2 h-6 w-6 text-slate-500 dark:text-slate-400" />
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-200">No inventory categories yet</p>
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              <div className="rounded-lg border border-dashed border-border p-8 text-center">
+                <PackageSearch className="mx-auto mb-2 h-6 w-6 text-muted-foreground" />
+                <p className="text-sm font-medium text-foreground">No inventory categories yet</p>
+                <p className="mt-1 text-xs text-muted-foreground">
                   Add inventory items or import a sheet to generate category analytics.
                 </p>
                 <div className="mt-4 flex flex-wrap justify-center gap-2">
-                  <Button asChild size="sm" className="bg-[#0f172a] hover:bg-slate-800">
+                  <Button asChild size="sm">
                     <Link href="/dashboard/import">Import Data</Link>
                   </Button>
                   <Button asChild size="sm" variant="outline">

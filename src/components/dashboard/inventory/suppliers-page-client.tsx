@@ -96,7 +96,7 @@ const supplierCategoryBadgeClassMap: Record<SupplierCategory, string> = {
   fish_supplier:
     "border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-cyan-900/40 dark:bg-cyan-950/30 dark:text-cyan-300",
   main_distributor:
-    "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300",
+    "border-border bg-secondary text-muted-foreground",
   asian_market:
     "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-900/40 dark:bg-orange-950/30 dark:text-orange-300",
 };
@@ -187,7 +187,7 @@ function SortHeader({ column, title }: { column: Column<SupplierTableRow, unknow
   return (
     <button
       type="button"
-      className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500 transition-colors hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+      className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
       onClick={() => column.toggleSorting(sortingState === "asc")}
     >
       <span>{title}</span>
@@ -225,12 +225,12 @@ function SupplierSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full overflow-y-auto border-slate-200 p-0 sm:max-w-xl dark:border-slate-800">
-        <div className="sticky top-0 z-10 border-b border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
-          <SheetTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+      <SheetContent side="right" className="w-full overflow-y-auto border-border p-0 sm:max-w-xl">
+        <div className="sticky top-0 z-10 border-b border-border bg-card px-6 py-4">
+          <SheetTitle className="text-lg font-semibold text-foreground">
             {editingSupplier ? "Edit supplier" : "Add supplier"}
           </SheetTitle>
-          <SheetDescription className="text-sm text-slate-500 dark:text-slate-400">
+          <SheetDescription className="text-sm text-muted-foreground">
             {editingSupplier
               ? "Update supplier details and status."
               : "Add a new supplier for your organization."}
@@ -298,10 +298,10 @@ function SupplierSheet({
             ) : null}
           </div>
 
-          <div className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-3 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center justify-between rounded-md border border-border bg-secondary px-3 py-3">
             <div>
-              <p className="text-sm font-medium text-slate-800 dark:text-slate-200">Supplier status</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-sm font-medium text-foreground">Supplier status</p>
+              <p className="text-xs text-muted-foreground">
                 Inactive suppliers remain available in history but hidden from default assignment flows.
               </p>
             </div>
@@ -311,11 +311,11 @@ function SupplierSheet({
             />
           </div>
 
-          <div className="flex justify-end gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
+          <div className="flex justify-end gap-2 border-t border-border pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-[#0f172a] hover:bg-slate-800" disabled={isPending}>
+            <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={isPending}>
               {isPending ? "Saving..." : editingSupplier ? "Save Changes" : "Create Supplier"}
             </Button>
           </div>
@@ -631,8 +631,8 @@ export function SuppliersPageClient({
         header: ({ column }) => <SortHeader column={column} title="Name" />,
         cell: ({ row }) => (
           <div className="min-w-[220px]">
-            <p className="truncate font-semibold text-slate-900 dark:text-slate-100">{row.original.name}</p>
-            <p className="truncate text-xs text-slate-500 dark:text-slate-400">ID: {row.original.id}</p>
+            <p className="truncate font-semibold text-foreground">{row.original.name}</p>
+            <p className="truncate text-xs text-muted-foreground">ID: {row.original.id}</p>
           </div>
         ),
         size: 320,
@@ -647,7 +647,7 @@ export function SuppliersPageClient({
               {labelForSupplierCategory(row.original.category)}
             </Badge>
           ) : (
-            <span className="text-slate-400 dark:text-slate-500">Unspecified</span>
+            <span className="text-muted-foreground">Unspecified</span>
           ),
         size: 170,
       },
@@ -663,7 +663,7 @@ export function SuppliersPageClient({
         accessorKey: "email",
         header: ({ column }) => <SortHeader column={column} title="Email" />,
         cell: ({ row }) => (
-          <span className="truncate text-slate-700 dark:text-slate-300">{row.original.email ?? "-"}</span>
+          <span className="truncate text-foreground">{row.original.email ?? "-"}</span>
         ),
         size: 210,
       },
@@ -901,8 +901,8 @@ export function SuppliersPageClient({
 
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">Suppliers</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Suppliers</h1>
+          <p className="text-sm text-muted-foreground">
             Manage supplier contacts, category ownership, and linked inventory items.
           </p>
         </div>
@@ -927,7 +927,7 @@ export function SuppliersPageClient({
           </Button>
 
           <Button
-            className="bg-[#0f172a] hover:bg-slate-800"
+            className="bg-primary hover:bg-primary/90"
             onClick={() => {
               setEditingSupplier(null);
               setSheetOpen(true);
@@ -939,7 +939,7 @@ export function SuppliersPageClient({
         </div>
       </header>
 
-      <Card className="border-slate-200 dark:border-slate-800">
+      <Card className="border-border">
         <CardHeader>
           <CardTitle>Supplier Directory</CardTitle>
           <CardDescription>
@@ -956,14 +956,14 @@ export function SuppliersPageClient({
               <Skeleton className="h-10 w-full" />
             </div>
           ) : supplierRows.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center dark:border-slate-700 dark:bg-slate-900">
-              <Building2 className="mx-auto mb-2 h-6 w-6 text-slate-500 dark:text-slate-400" />
-              <p className="text-sm font-medium text-slate-800 dark:text-slate-200">No suppliers yet.</p>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <div className="rounded-xl border border-dashed border-border bg-secondary p-10 text-center">
+              <Building2 className="mx-auto mb-2 h-6 w-6 text-muted-foreground" />
+              <p className="text-sm font-medium text-foreground">No suppliers yet.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
                 Add your first supplier to start assigning inventory items.
               </p>
               <Button
-                className="mt-4 bg-[#0f172a] hover:bg-slate-800"
+                className="mt-4 bg-primary hover:bg-primary/90"
                 onClick={() => {
                   setEditingSupplier(null);
                   setSheetOpen(true);
@@ -974,9 +974,9 @@ export function SuppliersPageClient({
               </Button>
             </div>
           ) : (
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800">
+            <div className="rounded-xl border border-border">
               <Table>
-                <TableHeader className="bg-slate-50 dark:bg-slate-900/70">
+                <TableHeader className="bg-secondary">
                   {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow key={headerGroup.id} className="hover:bg-transparent">
                       {headerGroup.headers.map((header) => (
@@ -1005,20 +1005,20 @@ export function SuppliersPageClient({
                         </TableRow>
 
                         {row.getIsExpanded() ? (
-                          <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-900/40 dark:hover:bg-slate-900/40">
+                          <TableRow className="bg-secondary/80 hover:bg-secondary/80">
                             <TableCell colSpan={row.getVisibleCells().length} className="py-4">
                               <div className="space-y-3">
                                 <div className="flex flex-wrap items-center justify-between gap-2">
-                                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                  <p className="text-sm font-medium text-foreground">
                                     Linked Inventory Items ({linkedItems.length.toLocaleString()})
                                   </p>
-                                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  <p className="text-xs text-muted-foreground">
                                     Updated {formatDateTime(row.original.updatedAt)}
                                   </p>
                                 </div>
 
                                 {linkedItems.length === 0 ? (
-                                  <div className="rounded-md border border-dashed border-slate-300 bg-white px-3 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                                  <div className="rounded-md border border-dashed border-border bg-card px-3 py-3 text-sm text-muted-foreground">
                                     No inventory items are currently linked to this supplier.
                                   </div>
                                 ) : (
@@ -1026,15 +1026,15 @@ export function SuppliersPageClient({
                                     {linkedItems.map((item) => (
                                       <div
                                         key={item.id}
-                                        className="rounded-md border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-900"
+                                        className="rounded-md border border-border bg-card px-3 py-2"
                                       >
                                         <div className="flex items-center gap-2">
                                           <span>{item.emoji}</span>
-                                          <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
+                                          <p className="truncate text-sm font-medium text-foreground">
                                             {item.name}
                                           </p>
                                         </div>
-                                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                                        <p className="mt-1 text-xs text-muted-foreground">
                                           {labelForCategory(item.category)}
                                         </p>
                                       </div>
@@ -1054,8 +1054,8 @@ export function SuppliersPageClient({
           )}
 
           {supplierRows.length > 0 ? (
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-3 text-sm dark:border-slate-800">
-              <p className="text-slate-500 dark:text-slate-400">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3 text-sm">
+              <p className="text-muted-foreground">
                 Showing {startItem.toLocaleString()}-{endItem.toLocaleString()} of {totalCount.toLocaleString()} suppliers
               </p>
 
@@ -1068,7 +1068,7 @@ export function SuppliersPageClient({
                 >
                   Previous
                 </Button>
-                <span className="min-w-[100px] text-center text-slate-500 dark:text-slate-400">
+                <span className="min-w-[100px] text-center text-muted-foreground">
                   Page {table.getState().pagination.pageIndex + 1} of {Math.max(table.getPageCount(), 1)}
                 </span>
                 <Button
@@ -1108,10 +1108,10 @@ export function SuppliersPageClient({
           }
         }}
       >
-        <SheetContent side="right" className="w-full overflow-y-auto border-slate-200 p-0 sm:max-w-2xl dark:border-slate-800">
-          <div className="sticky top-0 z-10 border-b border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
-            <SheetTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100">Bulk Assign Items</SheetTitle>
-            <SheetDescription className="text-sm text-slate-500 dark:text-slate-400">
+        <SheetContent side="right" className="w-full overflow-y-auto border-border p-0 sm:max-w-2xl">
+          <div className="sticky top-0 z-10 border-b border-border bg-card px-6 py-4">
+            <SheetTitle className="text-lg font-semibold text-foreground">Bulk Assign Items</SheetTitle>
+            <SheetDescription className="text-sm text-muted-foreground">
               Select inventory items and assign them to a supplier.
             </SheetDescription>
           </div>
@@ -1144,24 +1144,24 @@ export function SuppliersPageClient({
               />
             </div>
 
-            <div className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-900">
-              <p className="text-sm text-slate-600 dark:text-slate-300">
+            <div className="flex items-center justify-between rounded-md border border-border bg-secondary px-3 py-2">
+              <p className="text-sm text-muted-foreground">
                 {assignSelectedItemIds.length.toLocaleString()} selected
               </p>
-              <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300">
+              <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-medium text-muted-foreground">
                 <input
                   type="checkbox"
                   checked={allFilteredSelected}
                   onChange={(event) => setAllFilteredAssignItems(event.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-[#0d9488] focus:ring-[#0d9488]/40 dark:border-slate-600 dark:bg-slate-900"
+                  className="h-4 w-4 rounded border-border text-foreground focus:ring-ring/20"
                 />
                 Select all filtered
               </label>
             </div>
 
-            <div className="max-h-[420px] space-y-2 overflow-y-auto rounded-xl border border-slate-200 p-2 dark:border-slate-800">
+            <div className="max-h-[420px] space-y-2 overflow-y-auto rounded-xl border border-border p-2">
               {assignableItems.length === 0 ? (
-                <div className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-3 py-5 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                <div className="rounded-md border border-dashed border-border bg-secondary px-3 py-5 text-center text-sm text-muted-foreground">
                   No inventory items match the current search.
                 </div>
               ) : (
@@ -1175,22 +1175,22 @@ export function SuppliersPageClient({
                       className={cn(
                         "flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 transition-colors",
                         checked
-                          ? "border-[#0d9488]/40 bg-[#0d9488]/10"
-                          : "border-slate-200 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800",
+                          ? "border-primary/40 bg-primary/10"
+                          : "border-border bg-card hover:bg-secondary",
                       )}
                     >
                       <input
                         type="checkbox"
                         checked={checked}
                         onChange={(event) => toggleAssignItem(item.id, event.target.checked)}
-                        className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#0d9488] focus:ring-[#0d9488]/40 dark:border-slate-600 dark:bg-slate-900"
+                        className="mt-0.5 h-4 w-4 rounded border-border text-foreground focus:ring-ring/20"
                       />
 
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
+                        <p className="truncate text-sm font-medium text-foreground">
                           {item.emoji} {item.name}
                         </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                        <p className="text-xs text-muted-foreground">
                           {labelForCategory(item.category)} • Current supplier: {currentSupplier ?? "Unassigned"}
                         </p>
                       </div>
@@ -1200,11 +1200,11 @@ export function SuppliersPageClient({
               )}
             </div>
 
-            <div className="flex justify-end gap-2 border-t border-slate-200 pt-4 dark:border-slate-800">
+            <div className="flex justify-end gap-2 border-t border-border pt-4">
               <Button type="button" variant="outline" onClick={() => setAssignSheetOpen(false)} disabled={isMutating}>
                 Cancel
               </Button>
-              <Button type="button" className="bg-[#0f172a] hover:bg-slate-800" onClick={handleAssignItems} disabled={isMutating}>
+              <Button type="button" className="bg-primary hover:bg-primary/90" onClick={handleAssignItems} disabled={isMutating}>
                 {assignItemsMutation.isPending ? "Assigning..." : "Assign Selected Items"}
               </Button>
             </div>

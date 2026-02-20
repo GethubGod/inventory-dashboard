@@ -14,7 +14,7 @@ export default function InventoryLoading() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
+      <div className="rounded-xl border border-border p-4">
         <div className="grid gap-3 lg:grid-cols-4">
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-10 w-full" />
@@ -23,7 +23,7 @@ export default function InventoryLoading() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 dark:border-slate-800">
+      <div className="rounded-xl border border-border">
         <div className="space-y-2 p-4">
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-10 w-full" />

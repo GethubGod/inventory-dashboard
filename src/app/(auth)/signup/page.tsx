@@ -71,9 +71,9 @@ export default function SignupPage() {
   });
 
   return (
-    <Card className="border-slate-200 bg-white">
+    <Card className="border-border bg-card">
       <CardHeader>
-        <CardTitle className="text-[#0f172a]">Create your account</CardTitle>
+        <CardTitle className="text-foreground">Create your account</CardTitle>
         <CardDescription>Set up Babytuna access for your restaurant team.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -102,13 +102,13 @@ export default function SignupPage() {
             {errors.confirmPassword ? <p className="text-sm text-red-600">{errors.confirmPassword.message}</p> : null}
           </div>
 
-          <Button type="submit" className="w-full bg-[#0f172a] hover:bg-slate-800" disabled={isSubmitting}>
+          <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isSubmitting}>
             {isSubmitting ? "Creating account..." : "Create account"}
           </Button>
 
-          <p className="text-center text-sm text-slate-500">
+          <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link className="font-medium text-[#0d9488] hover:underline" href="/login">
+            <Link className="font-medium text-foreground hover:underline" href="/login">
               Log in
             </Link>
           </p>

@@ -22,8 +22,8 @@ type OverviewCategoryChartsProps = {
 };
 
 const CATEGORY_COLORS = [
-  "#0d9488",
-  "#0f172a",
+  "#1c1917",
+  "#78716c",
   "#0ea5e9",
   "#f59e0b",
   "#10b981",
@@ -47,8 +47,8 @@ function CategoryBarChart({
   valueLabel: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-      <h3 className="mb-3 text-sm font-semibold text-slate-800 dark:text-slate-200">{title}</h3>
+    <div className="rounded-xl border border-border bg-card p-4">
+      <h3 className="mb-3 text-sm font-semibold text-foreground">{title}</h3>
       <div className="h-[320px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} layout="vertical" margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
@@ -94,10 +94,10 @@ export function OverviewCategoryCharts({ inventoryData, usageData }: OverviewCat
       {usageData && usageData.length > 0 ? (
         <CategoryBarChart title="Usage by Category" data={usageData} valueLabel="units sold" />
       ) : (
-        <div className="flex h-[384px] items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center dark:border-slate-700 dark:bg-slate-900">
+        <div className="flex h-[384px] items-center justify-center rounded-xl border border-dashed border-border bg-secondary p-6 text-center">
           <div>
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Usage data not available yet</p>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-sm font-medium text-foreground">Usage data not available yet</p>
+            <p className="mt-1 text-xs text-muted-foreground">
               Connect Square and sync sales to unlock usage analytics by category.
             </p>
           </div>
