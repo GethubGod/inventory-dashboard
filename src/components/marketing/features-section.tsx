@@ -102,7 +102,7 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="py-24 md:py-32 bg-[#fafaf9] text-zinc-900 border-t border-black/5">
+    <section id="features" className="py-24 md:py-32 bg-[#fafaf9] text-zinc-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="initial"

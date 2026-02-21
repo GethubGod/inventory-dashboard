@@ -12,94 +12,168 @@ interface DeviceStageProps {
 }
 
 export function DeviceStage({ progress }: DeviceStageProps) {
-  // ─── ENTRY ───────────────────────────────────
-  const stageOpacity = useTransform(progress, [0.16, 0.24], [0, 1]);
-  const stageY = useTransform(progress, [0.16, 0.30], [200, 0]);
+  // ═══════════════════════════════════════════════
+  // PHONE SHELL – portrait iPhone 17 Pro Max
+  // ═══════════════════════════════════════════════
 
-  // ─── SCALE (phone → desktop) ─────────────────
-  const stageScale = useTransform(
-    progress,
-    [0, 0.74, 0.90, 1],
-    [0.34, 0.34, 1, 1]
-  );
+  // Phone entry: starts completely below viewport, only top edge peeks
+  const phoneOpacity = useTransform(progress, [0.24, 0.28, 0.74, 0.80], [0, 1, 1, 0]);
+  const phoneY = useTransform(progress, [0.24, 0.34, 0.46], [950, 620, 20]);
 
-  // ─── BORDER RADIUS morph ─────────────────────
-  const borderRadius = useTransform(progress, [0.74, 0.90], [42, 18]);
-  const borderWidth = useTransform(progress, [0.74, 0.90], [6, 2]);
+  // Screen content overlay: keeps screen dark during peek phase
+  const screenDimOpacity = useTransform(progress, [0.28, 0.46], [0.92, 0]);
 
-  // ─── NOTCH / LAPTOP BASE ─────────────────────
-  const notchOpacity = useTransform(progress, [0.74, 0.82], [1, 0]);
-  const laptopBaseOpacity = useTransform(progress, [0.82, 0.90], [0, 1]);
+  // Phone screen crossfades (5 screens in phone phase)
+  const s1 = useTransform(progress, [0.24, 0.30, 0.46, 0.50], [0, 1, 1, 0]);
+  const s2 = useTransform(progress, [0.44, 0.48, 0.54, 0.58], [0, 1, 1, 0]);
+  const s3 = useTransform(progress, [0.54, 0.58, 0.64, 0.68], [0, 1, 1, 0]);
+  const s4 = useTransform(progress, [0.64, 0.68, 0.74, 0.78], [0, 1, 1, 0]);
 
-  // ─── SCREEN CROSSFADES ───────────────────────
-  const s1 = useTransform(progress, [0.16, 0.24, 0.38, 0.42], [0, 1, 1, 0]);
-  const s2 = useTransform(progress, [0.40, 0.44, 0.50, 0.54], [0, 1, 1, 0]);
-  const s3 = useTransform(progress, [0.50, 0.54, 0.60, 0.64], [0, 1, 1, 0]);
-  const s4 = useTransform(progress, [0.60, 0.64, 0.70, 0.74], [0, 1, 1, 0]);
-  const s5 = useTransform(progress, [0.72, 0.78, 0.95, 1.00], [0, 1, 1, 0]);
+  // ═══════════════════════════════════════════════
+  // DESKTOP SHELL – landscape dashboard
+  // ═══════════════════════════════════════════════
 
-  // ─── EXIT ────────────────────────────────────
-  const exitOpacity = useTransform(progress, [0.92, 1.0], [1, 0]);
+  const desktopOpacity = useTransform(progress, [0.72, 0.80], [0, 1]);
+  const desktopScale = useTransform(progress, [0.72, 0.82], [0.92, 1]);
+  const laptopBaseOpacity = useTransform(progress, [0.80, 0.88], [0, 1]);
+
+  const s5 = useTransform(progress, [0.76, 0.82], [0, 1]);
+
+  // Desktop stays visible until hero section scrolls out — no explicit exit fade
+  const desktopExitOpacity = useTransform(progress, [0.76, 0.82], [0, 1]);
 
   return (
     <>
-      {/* Wrapper div handles centering via CSS only - no Framer transform conflicts */}
+      {/* ═══ PHONE SHELL ═══ */}
       <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
         <motion.div
-          className="w-[min(960px,92vw)] aspect-[16/9] origin-center transform-gpu"
+          className="h-[82vh] max-h-[860px] w-auto aspect-[9/19.5] origin-center transform-gpu"
           style={{
-            opacity: stageOpacity,
-            y: stageY,
-            scale: stageScale,
+            opacity: phoneOpacity,
+            y: phoneY,
           }}
         >
-          {/* Exit fade wrapper */}
-          <motion.div className="w-full h-full relative" style={{ opacity: exitOpacity }}>
-            {/* ── Device Frame ── */}
-            <motion.div
-              className="relative w-full h-full bg-[#0a0a0a] overflow-hidden transform-gpu"
+          {/* iPhone Frame */}
+          <div
+            className="relative w-full h-full rounded-[52px] overflow-hidden"
+            style={{
+              boxShadow:
+                "0 0 0 1px rgba(255,255,255,0.08), inset 0 0 0 1px rgba(255,255,255,0.04), 0 40px 100px -20px rgba(0,0,0,0.7), 0 0 60px 0 rgba(20,184,166,0.06), 0 4px 20px -2px rgba(0,0,0,0.4)",
+            }}
+          >
+            {/* Metallic border frame */}
+            <div className="absolute inset-0 rounded-[52px] pointer-events-none z-0"
               style={{
-                borderRadius,
-                borderWidth,
+                background: "linear-gradient(180deg, rgba(160,160,170,0.4) 0%, rgba(100,100,110,0.2) 30%, rgba(80,80,90,0.3) 70%, rgba(60,60,70,0.4) 100%)",
+              }}
+            />
+
+            {/* Inner bezel */}
+            <div className="absolute inset-[3px] rounded-[48px] bg-[#0a0a0a] z-[1] overflow-hidden">
+
+              {/* ── Dynamic Island ── */}
+              <div className="absolute top-[12px] left-1/2 -translate-x-1/2 z-40 flex items-center justify-center">
+                <div className="relative w-[120px] h-[34px] rounded-full overflow-hidden"
+                  style={{
+                    background: "linear-gradient(180deg, #0a0a0a 0%, #050505 100%)",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 0 0.5px rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <div className="absolute inset-[1px] rounded-full pointer-events-none"
+                    style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 50%)" }}
+                  />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 w-[7px] h-[7px] rounded-full"
+                    style={{
+                      background: "radial-gradient(circle, #1a1a3a 30%, #0a0a0a 70%)",
+                      boxShadow: "0 0 3px rgba(60,60,120,0.4), inset 0 0 2px rgba(255,255,255,0.1)",
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* ── Speaker slit ── */}
+              <div className="absolute top-[6px] left-1/2 -translate-x-1/2 w-[50px] h-[3px] rounded-full z-40 pointer-events-none"
+                style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)" }}
+              />
+
+              {/* ── Glass sheen ── */}
+              <div className="absolute inset-0 z-50 pointer-events-none"
+                style={{ background: "linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.05) 45%, transparent 60%)" }}
+              />
+
+              {/* ── Edge reflection ── */}
+              <div className="absolute top-0 left-[10%] right-[10%] h-[1px] z-50 pointer-events-none"
+                style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)" }}
+              />
+
+              {/* ── Screen Content ── */}
+              <motion.div className="absolute inset-0 z-[10]" style={{ opacity: s1 }}>
+                <Screen1Suggestions />
+              </motion.div>
+              <motion.div className="absolute inset-0 z-[10]" style={{ opacity: s2 }}>
+                <Screen2Voice />
+              </motion.div>
+              <motion.div className="absolute inset-0 z-[10]" style={{ opacity: s3 }}>
+                <Screen3Fulfillment />
+              </motion.div>
+              <motion.div className="absolute inset-0 z-[10]" style={{ opacity: s4 }}>
+                <Screen4Sales />
+              </motion.div>
+
+              {/* ── Screen dimmer: keeps content invisible during peek ── */}
+              <motion.div
+                className="absolute inset-0 z-[30] pointer-events-none bg-black"
+                style={{ opacity: screenDimOpacity }}
+              />
+            </div>
+          </div>
+
+          {/* Phone depth shadow */}
+          <div className="absolute -bottom-6 left-[15%] right-[15%] h-12 rounded-[50%] pointer-events-none z-[-1]"
+            style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, transparent 70%)" }}
+          />
+        </motion.div>
+      </div>
+
+      {/* ═══ DESKTOP SHELL ═══ */}
+      <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+        <motion.div
+          className="w-[min(1040px,92vw)] aspect-[16/9] origin-center transform-gpu"
+          style={{
+            opacity: desktopOpacity,
+            scale: desktopScale,
+          }}
+        >
+          <motion.div className="w-full h-full relative" style={{ opacity: desktopExitOpacity }}>
+            {/* Desktop frame */}
+            <div
+              className="relative w-full h-full bg-[#0a0a0a] rounded-[18px] overflow-hidden"
+              style={{
+                borderWidth: 2,
                 borderStyle: "solid",
-                borderColor: "rgba(255,255,255,0.18)",
+                borderColor: "rgba(255,255,255,0.15)",
                 boxShadow:
-                  "0 0 0 1px rgba(255,255,255,0.06), 0 40px 120px -20px rgba(0,0,0,0.7), 0 0 80px 0 rgba(20,184,166,0.08)",
+                  "0 0 0 1px rgba(255,255,255,0.06), 0 40px 100px -20px rgba(0,0,0,0.7), 0 4px 20px -2px rgba(0,0,0,0.3)",
               }}
             >
               {/* Glass sheen */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.06] to-transparent pointer-events-none z-50" />
+              <div className="absolute inset-0 z-50 pointer-events-none"
+                style={{ background: "linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.04) 45%, transparent 60%)" }}
+              />
 
-              {/* Phone notch */}
-              <motion.div
-                className="absolute top-0 left-1/2 -translate-x-1/2 w-36 h-8 bg-black rounded-b-2xl z-40"
-                style={{ opacity: notchOpacity }}
-              >
-                <div className="absolute right-5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white/10" />
-              </motion.div>
-
-              {/* ── Screen Layers ── */}
-              <motion.div className="absolute inset-0" style={{ opacity: s1 }}>
-                <Screen1Suggestions />
-              </motion.div>
-              <motion.div className="absolute inset-0" style={{ opacity: s2 }}>
-                <Screen2Voice />
-              </motion.div>
-              <motion.div className="absolute inset-0" style={{ opacity: s3 }}>
-                <Screen3Fulfillment />
-              </motion.div>
-              <motion.div className="absolute inset-0" style={{ opacity: s4 }}>
-                <Screen4Sales />
-              </motion.div>
-              <motion.div className="absolute inset-0" style={{ opacity: s5 }}>
+              {/* Desktop screen content */}
+              <motion.div className="absolute inset-0 z-[10]" style={{ opacity: s5 }}>
                 <Screen5WebDashboard />
               </motion.div>
-            </motion.div>
+            </div>
 
-            {/* ── Laptop Base ── */}
+            {/* Laptop base */}
             <motion.div
-              className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[110%] h-5 rounded-b-[20px] rounded-t-sm bg-gradient-to-b from-[#e5e5e5] to-[#caced1] shadow-[0_8px_16px_rgba(0,0,0,0.15)] border border-white/40"
-              style={{ opacity: laptopBaseOpacity }}
+              className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[110%] h-5 rounded-b-[20px] rounded-t-sm bg-gradient-to-b from-[#e5e5e5] to-[#caced1] border border-white/40"
+              style={{
+                opacity: laptopBaseOpacity,
+                boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
+              }}
             >
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-1.5 rounded-b bg-black/10" />
             </motion.div>

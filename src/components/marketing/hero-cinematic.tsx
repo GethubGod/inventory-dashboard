@@ -12,11 +12,10 @@ import { FloatingWidget } from "@/components/marketing/floating-widget";
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 
-/**
- * Custom hook that tracks the scroll progress of a section manually.
- * Uses getBoundingClientRect instead of Framer Motion's useScroll({ target })
- * which requires positioned offset parents that Next.js breaks.
- */
+// ─────────────────────────────────────────────────
+// Custom scroll hooks
+// ─────────────────────────────────────────────────
+
 function useSectionProgress(ref: React.RefObject<HTMLElement | null>) {
   const progress = useMotionValue(0);
 
@@ -47,10 +46,6 @@ function useSectionProgress(ref: React.RefObject<HTMLElement | null>) {
   return progress;
 }
 
-/**
- * Custom hook to track whether the hero section is in the viewport.
- * Returns a MotionValue<number> that is 1 when visible, 0 when not.
- */
 function useInSection(ref: React.RefObject<HTMLElement | null>) {
   const visible = useMotionValue(0);
 
@@ -61,8 +56,6 @@ function useInSection(ref: React.RefObject<HTMLElement | null>) {
     function update() {
       if (!el) return;
       const rect = el.getBoundingClientRect();
-      // Section is "active" when its top is at or above viewport top
-      // and its bottom is below the viewport top
       const isIn = rect.top <= 0 && rect.bottom > 0;
       visible.set(isIn ? 1 : 0);
     }
@@ -75,6 +68,10 @@ function useInSection(ref: React.RefObject<HTMLElement | null>) {
   return visible;
 }
 
+// ─────────────────────────────────────────────────
+// Main Component
+// ─────────────────────────────────────────────────
+
 export function HeroCinematic() {
   const heroRef = useRef<HTMLDivElement>(null);
   const { shouldReduceMotion } = useMotionPreferences();
@@ -82,29 +79,32 @@ export function HeroCinematic() {
   const scrollYProgress = useSectionProgress(heroRef);
   const inSection = useInSection(heroRef);
 
-  // ─── BACKGROUND: 12-stop gradual dark → light ─────────────
+  // ─── BACKGROUND ────────────────────────────────
   const bg = useTransform(
     scrollYProgress,
-    [0.00, 0.10, 0.16, 0.24, 0.32, 0.40, 0.48, 0.56, 0.64, 0.74, 0.88, 1.00],
+    [0.00, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 0.96, 1.00],
     [
-      "#000000", "#000000", "#050505", "#0b0b0b",
-      "#151515", "#222222", "#3a3a3a", "#5a5a5a",
-      "#8a8a8a", "#cfcfcf", "#efece4", "#fafaf9",
+      "#000000", "#000000", "#050505", "#0c0c0c",
+      "#181818", "#2a2a2a", "#484848", "#6a6a6a",
+      "#999999", "#d0d0d0", "#efece4", "#fafaf9",
     ]
   );
 
-  // ─── HEADLINE ANIMATIONS ──────────────────────────────────
-  const headlineY = useTransform(scrollYProgress, [0, 0.16, 0.30], [0, 0, -180]);
-  const headlineScale = useTransform(scrollYProgress, [0, 0.16, 0.30], [1, 1, 0.85]);
-  const headlineOpacity = useTransform(scrollYProgress, [0.16, 0.30, 0.38], [1, 0.4, 0]);
+  // ─── TEXT/CTA: stays visible until 0.32, then lifts + fades by 0.44 ──
+  const textY = useTransform(scrollYProgress, [0.32, 0.44], [0, -180]);
+  const textScale = useTransform(scrollYProgress, [0.32, 0.44], [1, 0.9]);
+  const textOpacity = useTransform(scrollYProgress, [0.00, 0.32, 0.44], [1, 1, 0]);
 
-  // ─── AURORA BLOB FADE ─────────────────────────────────────
+  // ─── MIST: de-emphasize phone during peek phase ──
+  const mistOpacity = useTransform(scrollYProgress, [0.24, 0.28, 0.40, 0.48], [0, 0.9, 0.9, 0]);
+
+  // ─── AURORA BLOBS ──────────────────────────────
   const blobOpacity = useTransform(scrollYProgress, [0, 0.5, 0.8], [1, 0.5, 0]);
 
-  // ─── VIGNETTE ─────────────────────────────────────────────
+  // ─── VIGNETTE ──────────────────────────────────
   const vignetteOpacity = useTransform(scrollYProgress, [0, 0.85, 1], [0.6, 0.15, 0]);
 
-  // ─── REDUCED MOTION STATIC FALLBACK ───────────────────────
+  // ─── REDUCED MOTION FALLBACK ───────────────────
   if (shouldReduceMotion) {
     return (
       <section className="bg-[#fafaf9] text-zinc-900 relative min-h-screen py-32 flex flex-col items-center justify-center">
@@ -142,22 +142,16 @@ export function HeroCinematic() {
     );
   }
 
-  // ─── MAIN CINEMATIC HERO ──────────────────────────────────
+  // ─── MAIN CINEMATIC ────────────────────────────
   return (
     <>
-      {/* Scroll spacer: 650vh tall, provides the scroll distance */}
-      <section ref={heroRef} style={{ height: "650vh", position: "relative" }}>
-        {/* This section is intentionally empty - it only provides scroll height.
-            All visuals are rendered in the fixed overlay below. */}
-      </section>
+      {/* Scroll spacer */}
+      <section ref={heroRef} style={{ height: "440vh", position: "relative" }} />
 
-      {/* ── Fixed overlay: always covers viewport, visibility controlled by inSection ── */}
+      {/* Fixed overlay */}
       <motion.div
         className="fixed inset-0 w-full h-screen overflow-hidden pointer-events-none"
-        style={{
-          opacity: inSection,
-          zIndex: 5,
-        }}
+        style={{ opacity: inSection, zIndex: 5 }}
       >
         {/* Animated background */}
         <motion.div className="absolute inset-0 z-0" style={{ backgroundColor: bg }} />
@@ -165,9 +159,9 @@ export function HeroCinematic() {
         {/* Content stage */}
         <div className="relative h-full w-full overflow-hidden pointer-events-auto">
 
-          {/* ── Background visuals ── */}
+          {/* ── Background noise texture ── */}
           <div
-            className="absolute inset-0 z-0 pointer-events-none opacity-[0.05]"
+            className="absolute inset-0 z-0 pointer-events-none opacity-[0.04]"
             style={{
               backgroundImage:
                 "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
@@ -189,18 +183,29 @@ export function HeroCinematic() {
             className="absolute inset-0 pointer-events-none z-[5]"
             style={{
               opacity: vignetteOpacity,
-              background:
-                "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%)",
+              background: "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%)",
             }}
           />
 
-          {/* ── Headline Group ── */}
+          {/* ── Device Stage (z-10: BEHIND headline) ── */}
+          <DeviceStage progress={scrollYProgress} />
+
+          {/* ── Mist gradient under text (de-emphasizes phone during peek) ── */}
           <motion.div
-            className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none px-4"
+            className="absolute inset-x-0 top-[25%] bottom-[15%] z-[25] pointer-events-none"
             style={{
-              y: headlineY,
-              scale: headlineScale,
-              opacity: headlineOpacity,
+              opacity: mistOpacity,
+              background: "radial-gradient(ellipse 80% 60% at 50% 55%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, transparent 70%)",
+            }}
+          />
+
+          {/* ── Headline/CTA Group (z-30: ABOVE device) ── */}
+          <motion.div
+            className="absolute inset-0 z-30 flex flex-col items-center justify-center pointer-events-none px-4"
+            style={{
+              y: textY,
+              scale: textScale,
+              opacity: textOpacity,
             }}
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-8 pointer-events-auto">
@@ -231,13 +236,10 @@ export function HeroCinematic() {
             </Link>
           </motion.div>
 
-          {/* ── Device Stage ── */}
-          <DeviceStage progress={scrollYProgress} />
-
-          {/* ── Floating Widgets ── */}
+          {/* ── Floating Widgets (appear only AFTER text is gone, >= 0.42) ── */}
           <FloatingWidget
             progress={scrollYProgress}
-            inPoint={0.34}
+            inPoint={0.46}
             outPoint={0.72}
             side="left"
             title="Alex (Manager)"
@@ -246,7 +248,7 @@ export function HeroCinematic() {
           />
           <FloatingWidget
             progress={scrollYProgress}
-            inPoint={0.36}
+            inPoint={0.48}
             outPoint={0.72}
             side="right"
             title="Auto-ordering"
@@ -255,7 +257,7 @@ export function HeroCinematic() {
           />
           <FloatingWidget
             progress={scrollYProgress}
-            inPoint={0.44}
+            inPoint={0.54}
             outPoint={0.72}
             side="left"
             title="Voice Parse"
@@ -264,7 +266,7 @@ export function HeroCinematic() {
           />
           <FloatingWidget
             progress={scrollYProgress}
-            inPoint={0.46}
+            inPoint={0.56}
             outPoint={0.72}
             side="right"
             title="Translation"
@@ -285,21 +287,21 @@ export function HeroCinematic() {
 // ─────────────────────────────────────────────────
 
 function FeatureLabel({ progress }: { progress: ReturnType<typeof useMotionValue<number>> }) {
-  const opacity = useTransform(progress, [0.28, 0.34, 0.88, 0.92], [0, 1, 1, 0]);
-  const y = useTransform(progress, [0.28, 0.34], [30, 0]);
-  const labelColor = useTransform(progress, [0.68, 0.85], ["#ffffff", "#18181b"]);
+  const opacity = useTransform(progress, [0.42, 0.48, 0.92, 0.96], [0, 1, 1, 0]);
+  const y = useTransform(progress, [0.42, 0.48], [30, 0]);
+  const labelColor = useTransform(progress, [0.72, 0.90], ["#ffffff", "#18181b"]);
 
   return (
     <motion.div
-      className="absolute bottom-[8%] md:bottom-[12%] left-1/2 -translate-x-1/2 z-30 pointer-events-none text-center"
+      className="absolute bottom-[6%] md:bottom-[10%] left-1/2 -translate-x-1/2 z-30 pointer-events-none text-center"
       style={{ opacity, y, color: labelColor }}
     >
       <div className="relative h-8 w-[280px] flex items-center justify-center text-sm md:text-base font-medium tracking-wide">
-        <FadeLabel progress={progress} from={0.34} to={0.44} text="Smart Ordering" />
-        <FadeLabel progress={progress} from={0.44} to={0.54} text="Voice AI Engine" />
-        <FadeLabel progress={progress} from={0.54} to={0.64} text="Smart Fulfillment" />
-        <FadeLabel progress={progress} from={0.64} to={0.74} text="Square POS Integration" />
-        <FadeLabel progress={progress} from={0.76} to={0.92} text="Management Dashboard" />
+        <FadeLabel progress={progress} from={0.46} to={0.56} text="Smart Ordering" />
+        <FadeLabel progress={progress} from={0.56} to={0.64} text="Voice AI Engine" />
+        <FadeLabel progress={progress} from={0.64} to={0.72} text="Smart Fulfillment" />
+        <FadeLabel progress={progress} from={0.72} to={0.82} text="Square POS Integration" />
+        <FadeLabel progress={progress} from={0.84} to={0.96} text="Management Dashboard" />
       </div>
     </motion.div>
   );

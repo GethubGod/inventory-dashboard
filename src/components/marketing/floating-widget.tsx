@@ -8,7 +8,6 @@ interface FloatingWidgetProps {
   inPoint: number;
   outPoint: number;
   side: "left" | "right";
-  offsetY?: string;
   title: string;
   subtitle: string;
   icon: "user" | "clock" | "mic" | "bot" | "chart" | "check";
@@ -28,7 +27,6 @@ export function FloatingWidget({
   inPoint,
   outPoint,
   side,
-  offsetY = "0px",
   title,
   subtitle,
   icon,
@@ -45,7 +43,7 @@ export function FloatingWidget({
   const slideX = useTransform(
     progress,
     [inPoint, inPoint + fadeIn],
-    [side === "left" ? 30 : -30, 0]
+    [side === "left" ? 40 : -40, 0]
   );
 
   const IconComponent = icons[icon] || CheckCircle2;
@@ -53,18 +51,18 @@ export function FloatingWidget({
   return (
     <motion.div
       style={{ opacity, x: slideX }}
-      className={`absolute top-1/2 hidden md:flex items-center gap-4 bg-white/95 backdrop-blur-md px-5 py-3.5 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-black/5 z-20 pointer-events-none transform-gpu ${
+      className={`absolute top-[40%] hidden md:flex items-center gap-4 min-w-[240px] bg-white/95 backdrop-blur-xl px-6 py-5 rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.14),0_4px_12px_rgba(0,0,0,0.06)] border border-black/5 z-20 pointer-events-none transform-gpu ${
         side === "left"
-          ? "right-[55%] lg:right-[56%]"
-          : "left-[55%] lg:left-[56%]"
+          ? "left-[5%] lg:left-[6%] xl:left-[8%]"
+          : "right-[5%] lg:right-[6%] xl:right-[8%]"
       }`}
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-teal-600">
-        <IconComponent className="h-5 w-5" />
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-teal-600">
+        <IconComponent className="h-6 w-6" />
       </div>
       <div>
-        <p className="text-sm font-semibold text-zinc-900">{title}</p>
-        <p className="text-xs text-zinc-500 mt-0.5">{subtitle}</p>
+        <p className="text-base font-semibold text-zinc-900 leading-tight">{title}</p>
+        <p className="text-sm text-zinc-500 mt-0.5">{subtitle}</p>
       </div>
     </motion.div>
   );
