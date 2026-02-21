@@ -8,7 +8,7 @@ import {
 } from "framer-motion";
 import { useMotionPreferences } from "@/lib/motion";
 import { DeviceStage } from "@/components/marketing/device-stage";
-import { FlipTiles } from "@/components/marketing/flip-tiles";
+import { TextCallouts } from "@/components/marketing/text-callouts";
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 
@@ -82,11 +82,10 @@ export function HeroCinematic() {
   // ─── BACKGROUND ────────────────────────────────
   const bg = useTransform(
     scrollYProgress,
-    [0.00, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 0.96, 1.00],
+    [0.00, 0.20, 0.40, 0.60, 0.70, 0.80, 0.90, 1.00],
     [
-      "#000000", "#000000", "#050505", "#0c0c0c",
-      "#181818", "#2a2a2a", "#484848", "#6a6a6a",
-      "#999999", "#d0d0d0", "#efece4", "#fafaf9",
+      "#000000", "#020202", "#050505", "#0a0a0a",
+      "#1a1a1a", "#4a4a4a", "#e5e5e5", "#fafaf9",
     ]
   );
 
@@ -153,8 +152,34 @@ export function HeroCinematic() {
             }}
           />
 
-          {/* ── Device Stage (z-30) — always in front of text ── */}
+          {/* ── Device Stage (z-30) ── */}
           <DeviceStage progress={scrollYProgress} />
+
+          {/* ── Overlay Text (Phase 1 & 2) ── */}
+          {/* Sits above the device, high contrast, staggered entry */}
+          <motion.div
+            className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-40"
+            style={{
+              y: useTransform(scrollYProgress, [0.0, 0.2, 0.28, 0.35], [50, 0, 0, -50])
+            }}
+          >
+            <motion.h1
+              className="text-[12vw] leading-none font-bold tracking-tighter text-white drop-shadow-2xl"
+              style={{
+                opacity: useTransform(scrollYProgress, [0.0, 0.15, 0.28, 0.35], [0, 1, 1, 0])
+              }}
+            >
+              All in one
+            </motion.h1>
+            <motion.h1
+              className="text-[14vw] leading-none font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-zinc-200 drop-shadow-2xl"
+              style={{
+                opacity: useTransform(scrollYProgress, [0.10, 0.25, 0.28, 0.35], [0, 1, 1, 0])
+              }}
+            >
+              solution
+            </motion.h1>
+          </motion.div>
 
           {/* ── Headline/CTA Group (z-20 — behind phone) ── */}
           <motion.div
@@ -193,11 +218,42 @@ export function HeroCinematic() {
             </Link>
           </motion.div>
 
-          {/* ── Flip-Clock Tiles ── */}
-          <FlipTiles progress={scrollYProgress} />
-
-          {/* ── Feature Label (fixed spacing below phone) ── */}
-          <FeatureLabel progress={scrollYProgress} />
+          {/* ── Text Callouts (Phase 3) ── */}
+          <TextCallouts 
+            progress={scrollYProgress} 
+            contents={[
+              {
+                eyebrow: "TIME SAVED",
+                value: "2.5 hrs",
+                supporting: "per shift on ordering & prep",
+                accent: "text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400"
+              },
+              {
+                eyebrow: "WASTE REDUCED",
+                value: "−18%",
+                supporting: "from smarter forecasting",
+                accent: "text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-green-500"
+              },
+              {
+                eyebrow: "LIVE SYNC",
+                value: "< 2 min",
+                supporting: "always up to date inventory",
+                accent: "text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400"
+              },
+              {
+                eyebrow: "ACCURACY",
+                value: "99%",
+                supporting: "invoice parsing precision",
+                accent: "text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400"
+              }
+            ]}
+            windows={[
+              [0.28, 0.40],
+              [0.40, 0.52],
+              [0.52, 0.64],
+              [0.64, 0.74]
+            ]}
+          />
         </div>
       </motion.div>
     </>
@@ -207,55 +263,6 @@ export function HeroCinematic() {
 // ─────────────────────────────────────────────────
 // Sub-components
 // ─────────────────────────────────────────────────
-
-const FeatureLabel = memo(function FeatureLabel({
-  progress,
-}: {
-  progress: ReturnType<typeof useMotionValue<number>>;
-}) {
-  const opacity = useTransform(progress, [0.28, 0.32, 0.72, 0.76], [0, 1, 1, 0]);
-  const y = useTransform(progress, [0.28, 0.32], [16, 0]);
-  const labelColor = useTransform(progress, [0.72, 0.90], ["#ffffff", "#18181b"]);
-
-  return (
-    <motion.div
-      className="absolute bottom-7 left-1/2 -translate-x-1/2 z-40 pointer-events-none text-center"
-      style={{ opacity, y, color: labelColor }}
-    >
-      <div className="relative h-8 w-[280px] flex items-center justify-center text-sm md:text-base font-medium tracking-wide">
-        <FadeLabel progress={progress} from={0.28} to={0.40} text="Smart Prep List" />
-        <FadeLabel progress={progress} from={0.40} to={0.52} text="Voice AI Engine" />
-        <FadeLabel progress={progress} from={0.52} to={0.64} text="Smart Fulfillment" />
-        <FadeLabel progress={progress} from={0.64} to={0.74} text="Square POS Integration" />
-        <FadeLabel progress={progress} from={0.82} to={0.96} text="Management Dashboard" />
-      </div>
-    </motion.div>
-  );
-});
-
-function FadeLabel({
-  progress,
-  from,
-  to,
-  text,
-}: {
-  progress: ReturnType<typeof useMotionValue<number>>;
-  from: number;
-  to: number;
-  text: string;
-}) {
-  const pad = 0.005;
-  const opacity = useTransform(
-    progress,
-    [from, from + pad, to - pad, to],
-    [0, 1, 1, 0]
-  );
-  return (
-    <motion.span style={{ opacity }} className="absolute whitespace-nowrap">
-      {text}
-    </motion.span>
-  );
-}
 
 // ─────────────────────────────────────────────────
 // Reduced Motion Fallback

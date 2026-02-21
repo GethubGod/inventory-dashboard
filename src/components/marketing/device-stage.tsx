@@ -32,16 +32,21 @@ interface DeviceStageProps {
 export const DeviceStage = memo(function DeviceStage({ progress }: DeviceStageProps) {
 
   // ―――――――――――――――――――――――――――――――――――――――――――
-  //  PHONE RISE (peek → full view)
-  //  At p=0: phone is far below the CTA button to not obscure it
-  //  At p=0.28: phone fully risen into center position
+  //  PHONE RISE & PAN (And Return to center during morph)
+  //  At p=0.00: phone starts high enough to peek ~20-30% beneath the CTA
+  //  At p=0.10: phone rises into full view at Center
+  //  At p=0.22 - 0.28: phone pans to the left
+  //  At p=0.74 - 0.86: phone pans back to center DURING stretch morph
   // ―――――――――――――――――――――――――――――――――――――――――――
-  const phoneY = useTransform(progress, [0.00, 0.15, 0.28], [800, 300, 0]);
-  const phoneOpacity = useTransform(progress, [0.00, 0.02], [0.85, 1]);
-  const phoneScale = useTransform(progress, [0.12, 0.28, 0.72, 0.76], [0.98, 1.06, 1.06, 1]);
+  const phoneY = useTransform(progress, [0.00, 0.10], [550, 0]);
+  const phoneX = useTransform(progress, [0.22, 0.28, 0.74, 0.86], ["0vw", "-22vw", "-22vw", "0vw"]);
+  
+  // Opacity & Shadow during initial rise
+  const phoneOpacity = useTransform(progress, [0.00, 0.05], [0.85, 1]);
+  const phoneShadowOpacity = useTransform(progress, [0.05, 0.10, 0.72, 0.78], [0, 0.55, 0.55, 0]);
 
-  // Shadow depth during rise
-  const phoneShadowOpacity = useTransform(progress, [0.10, 0.28, 0.72, 0.78], [0, 0.55, 0.55, 0]);
+  // Overall phone scale (slightly larger Pro Max feel at rest = 1.0)
+  const phoneScale = useTransform(progress, [0.00, 0.10, 0.72, 0.76], [0.95, 1.0, 1.0, 1.0]);
 
   // Screen dimmer during early reveal (keeps content dark)
   const screenDimOpacity = useTransform(progress, [0.20, 0.30], [0.85, 0]);
@@ -64,11 +69,10 @@ export const DeviceStage = memo(function DeviceStage({ progress }: DeviceStagePr
   // ―――――――――――――――――――――――――――――――――――――――――――
 
   // Screen blackout: quick fade to black at morph start, then reveal dashboard
-  const screenBlackout = useTransform(progress, [0.72, 0.76, 0.80, 0.86], [0, 1, 1, 0]);
+  const screenBlackout = useTransform(progress, [0.72, 0.76, 0.85, 0.88], [0, 1, 1, 0]);
 
-  // Scale stretch: phone proportions → laptop proportions
-  const morphScaleX = useTransform(progress, [0.74, 0.86], [1, 2.6]);
-  const morphScaleY = useTransform(progress, [0.74, 0.86], [1, 0.58]);
+  // Layout stretch: phone dimensions → laptop dimensions via CSS custom property
+  const morphP = useTransform(progress, [0.74, 0.86], [0, 1]);
 
   // Shell crossfade: phone shell (rounded) fades out, laptop shell fades in
   const phoneShellOpacity = useTransform(progress, [0.76, 0.84], [1, 0]);
@@ -100,17 +104,14 @@ export const DeviceStage = memo(function DeviceStage({ progress }: DeviceStagePr
         <motion.div
           className="relative origin-center transform-gpu"
           style={{
-            // Strict viewport constraints: never clipping bottom/top
-            height: "calc(100vh - 220px)",
-            maxHeight: "850px",
-            width: "auto",
-            aspectRatio: "9 / 19.5",
+            "--morph-p": morphP,
+            width: "calc( min(380px, 45vw) + (85vw - min(380px, 45vw)) * var(--morph-p) )",
+            height: "calc( min(950px, calc(100vh - 120px)) + (80vh - min(950px, calc(100vh - 120px))) * var(--morph-p) )",
+            x: phoneX,
             y: phoneY,
             opacity: phoneOpacity,
             scale: phoneScale,
-            scaleX: morphScaleX,
-            scaleY: morphScaleY,
-          }}
+          } as any}
         >
           {/* Depth shadow below device */}
           <motion.div
@@ -130,32 +131,34 @@ export const DeviceStage = memo(function DeviceStage({ progress }: DeviceStagePr
 
               {/* ─── Shell A: Phone (rounded corners, dynamic island) ─── */}
               <motion.div
-                className="absolute inset-0 rounded-[52px] overflow-hidden"
+                className="absolute inset-0 overflow-hidden"
                 style={{
                   opacity: phoneShellOpacity,
+                  borderRadius: "calc(52px + (18px - 52px) * var(--morph-p))",
                   boxShadow: "0 0 0 1px rgba(255,255,255,0.08), inset 0 0 0 1px rgba(255,255,255,0.04), 0 40px 100px -20px rgba(0,0,0,0.7), 0 4px 20px -2px rgba(0,0,0,0.4)",
                 }}
               >
                 {/* Metallic band */}
                 <div
-                  className="absolute inset-0 rounded-[52px] pointer-events-none z-0"
+                  className="absolute inset-0 pointer-events-none z-0"
                   style={{
                     background: "linear-gradient(180deg, rgba(160,160,170,0.4) 0%, rgba(100,100,110,0.2) 30%, rgba(80,80,90,0.3) 70%, rgba(60,60,70,0.4) 100%)",
                   }}
                 />
                 {/* Bezel */}
-                <div className="absolute inset-[3px] rounded-[48px] bg-[#0a0a0a] z-[1]" />
+                <motion.div 
+                  className="absolute inset-[3px] bg-[#0a0a0a] z-[1]" 
+                  style={{ borderRadius: "calc(48px + (15px - 48px) * var(--morph-p))" }}
+                />
               </motion.div>
 
               {/* ─── Shell B: Laptop (smaller corners) ─── */}
-              {/* To prevent bezel stretching, the laptop shell applies the inverse of the parent scale
-                  so its border stays exactly 2px at all times while the parent stretches. */}
+              {/* No longer requires inverse scaling, natively fits the physical layout box stretch */}
               <motion.div
-                className="absolute inset-0 rounded-[18px] overflow-hidden"
+                className="absolute inset-0 overflow-hidden"
                 style={{
                   opacity: laptopShellOpacity,
-                  scaleX: useTransform(morphScaleX, v => 1 / v),
-                  scaleY: useTransform(morphScaleY, v => 1 / v),
+                  borderRadius: "calc(52px + (18px - 52px) * var(--morph-p))",
                   borderWidth: 2,
                   borderStyle: "solid",
                   borderColor: "rgba(255,255,255,0.15)",
@@ -166,7 +169,10 @@ export const DeviceStage = memo(function DeviceStage({ progress }: DeviceStagePr
               </motion.div>
 
               {/* ─── Screen area (shared between phone & laptop) ─── */}
-              <div className="absolute inset-[3px] z-[5] overflow-hidden rounded-[48px]">
+              <motion.div 
+                className="absolute inset-[3px] z-[5] overflow-hidden"
+                style={{ borderRadius: "calc(48px + (15px - 48px) * var(--morph-p))" }}
+              >
                 {/* Dynamic Island */}
                 <motion.div
                   className="absolute top-[12px] left-1/2 -translate-x-1/2 z-40"
@@ -230,11 +236,9 @@ export const DeviceStage = memo(function DeviceStage({ progress }: DeviceStagePr
                   className="absolute inset-0 flex items-center justify-center z-[10]" 
                   style={{ 
                     opacity: s5,
-                    scaleX: useTransform(morphScaleX, v => 1 / v),
-                    scaleY: useTransform(morphScaleY, v => 1 / v),
                   }}
                 >
-                  <div className="w-[1000px] h-[600px] max-w-none origin-center">
+                  <div className="w-full h-full max-w-none origin-center overflow-hidden rounded-md bg-white">
                     <Screen5WebDashboard />
                   </div>
                 </motion.div>
@@ -250,7 +254,7 @@ export const DeviceStage = memo(function DeviceStage({ progress }: DeviceStagePr
                   className="absolute inset-0 z-[25] pointer-events-none bg-black"
                   style={{ opacity: screenBlackout }}
                 />
-              </div>
+              </motion.div>
             </motion.div>
 
             {/* ── Keyboard base (separate, below screen hinge) ── */}
