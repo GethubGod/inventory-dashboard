@@ -13,8 +13,7 @@ import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 
 // ─────────────────────────────────────────────────
-// Custom scroll hooks (no scroll listeners — uses
-// passive event + MotionValue for GPU-friendly updates)
+// Custom scroll hooks (passive scroll events + MotionValue)
 // ─────────────────────────────────────────────────
 
 function useSectionProgress(ref: React.RefObject<HTMLElement | null>) {
@@ -92,10 +91,11 @@ export function HeroCinematic() {
   );
 
   // ─── TEXT/CTA ──────────────────────────────────
-  // Text is dominant 0.00–0.12, then fades by 0.28 as phone covers it
-  const textY = useTransform(scrollYProgress, [0.12, 0.28], [0, -120]);
-  const textScale = useTransform(scrollYProgress, [0.12, 0.28], [1, 0.92]);
-  const textOpacity = useTransform(scrollYProgress, [0.00, 0.12, 0.26], [1, 1, 0]);
+  // Text must fade out BEFORE phone reaches center (z-20 behind z-30 phone)
+  // Adjusted text coordinates to fade exactly as phone rises, removing overlap
+  const textY = useTransform(scrollYProgress, [0.05, 0.18], [0, -100]);
+  const textScale = useTransform(scrollYProgress, [0.05, 0.18], [1, 0.92]);
+  const textOpacity = useTransform(scrollYProgress, [0.00, 0.08, 0.18], [1, 1, 0]);
 
   // ─── AURORA BLOBS ──────────────────────────────
   const blobOpacity = useTransform(scrollYProgress, [0, 0.4, 0.7], [1, 0.5, 0]);
@@ -112,7 +112,7 @@ export function HeroCinematic() {
   return (
     <>
       {/* Scroll spacer */}
-      <section ref={heroRef} style={{ height: "500vh", position: "relative" }} />
+      <section ref={heroRef} style={{ height: "400vh", position: "relative" }} />
 
       {/* Fixed overlay */}
       <motion.div
@@ -153,10 +153,10 @@ export function HeroCinematic() {
             }}
           />
 
-          {/* ── Device Stage ── */}
+          {/* ── Device Stage (z-30) — always in front of text ── */}
           <DeviceStage progress={scrollYProgress} />
 
-          {/* ── Headline/CTA Group (z-20: between peek phone and main phone) ── */}
+          {/* ── Headline/CTA Group (z-20 — behind phone) ── */}
           <motion.div
             className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none px-4"
             style={{
@@ -196,7 +196,7 @@ export function HeroCinematic() {
           {/* ── Flip-Clock Tiles ── */}
           <FlipTiles progress={scrollYProgress} />
 
-          {/* ── Feature Label (below phone, never overlapping content) ── */}
+          {/* ── Feature Label (fixed spacing below phone) ── */}
           <FeatureLabel progress={scrollYProgress} />
         </div>
       </motion.div>
@@ -214,12 +214,12 @@ const FeatureLabel = memo(function FeatureLabel({
   progress: ReturnType<typeof useMotionValue<number>>;
 }) {
   const opacity = useTransform(progress, [0.28, 0.32, 0.72, 0.76], [0, 1, 1, 0]);
-  const y = useTransform(progress, [0.28, 0.32], [20, 0]);
+  const y = useTransform(progress, [0.28, 0.32], [16, 0]);
   const labelColor = useTransform(progress, [0.72, 0.90], ["#ffffff", "#18181b"]);
 
   return (
     <motion.div
-      className="absolute bottom-[4%] md:bottom-[6%] left-1/2 -translate-x-1/2 z-40 pointer-events-none text-center"
+      className="absolute bottom-7 left-1/2 -translate-x-1/2 z-40 pointer-events-none text-center"
       style={{ opacity, y, color: labelColor }}
     >
       <div className="relative h-8 w-[280px] flex items-center justify-center text-sm md:text-base font-medium tracking-wide">

@@ -33,11 +33,11 @@ export const DeviceStage = memo(function DeviceStage({ progress }: DeviceStagePr
 
   // ―――――――――――――――――――――――――――――――――――――――――――
   //  PHONE RISE (peek → full view)
-  //  At p=0: phone is far below, only top ~12% visible through clip
+  //  At p=0: phone is far below the CTA button to not obscure it
   //  At p=0.28: phone fully risen into center position
   // ―――――――――――――――――――――――――――――――――――――――――――
-  const phoneY = useTransform(progress, [0.00, 0.12, 0.28], [380, 280, 0]);
-  const phoneOpacity = useTransform(progress, [0.00, 0.04], [0.7, 1]);
+  const phoneY = useTransform(progress, [0.00, 0.15, 0.28], [800, 300, 0]);
+  const phoneOpacity = useTransform(progress, [0.00, 0.02], [0.85, 1]);
   const phoneScale = useTransform(progress, [0.12, 0.28, 0.72, 0.76], [0.98, 1.06, 1.06, 1]);
 
   // Shadow depth during rise
@@ -83,13 +83,10 @@ export const DeviceStage = memo(function DeviceStage({ progress }: DeviceStagePr
 
   // ―――――――――――――――――――――――――――――――――――――――――――
   //  LAPTOP CLOSE (0.90 – 1.00)
-  //  Capped at -45deg so next section covers it mid-close
+  //  Removed: Laptop remains strictly open for handoff.
   // ―――――――――――――――――――――――――――――――――――――――――――
-  const hingeRotate = useTransform(progress, [0.90, 1.00], [0, -45]);
-  const closeFade = useTransform(progress, [0.92, 1.00], [1, 0.6]);
-
-  // Overall device visibility (hides when hero leaves viewport)
-  const deviceVisible = useTransform(progress, [0, 0.01, 0.98, 1.00], [0, 1, 1, 0]);
+  const hingeRotate = useTransform(progress, [0.90, 1.00], [0, 0]);
+  const closeFade = useTransform(progress, [0.92, 1.00], [1, 1]);
 
   return (
     <div className="absolute inset-0 z-30 pointer-events-none">
@@ -103,11 +100,13 @@ export const DeviceStage = memo(function DeviceStage({ progress }: DeviceStagePr
         <motion.div
           className="relative origin-center transform-gpu"
           style={{
-            // Phone proportions at rest, stretches during morph
-            width: "min(380px, 48vw)",
+            // Strict viewport constraints: never clipping bottom/top
+            height: "calc(100vh - 220px)",
+            maxHeight: "850px",
+            width: "auto",
             aspectRatio: "9 / 19.5",
             y: phoneY,
-            opacity: deviceVisible,
+            opacity: phoneOpacity,
             scale: phoneScale,
             scaleX: morphScaleX,
             scaleY: morphScaleY,
@@ -149,10 +148,14 @@ export const DeviceStage = memo(function DeviceStage({ progress }: DeviceStagePr
               </motion.div>
 
               {/* ─── Shell B: Laptop (smaller corners) ─── */}
+              {/* To prevent bezel stretching, the laptop shell applies the inverse of the parent scale
+                  so its border stays exactly 2px at all times while the parent stretches. */}
               <motion.div
                 className="absolute inset-0 rounded-[18px] overflow-hidden"
                 style={{
                   opacity: laptopShellOpacity,
+                  scaleX: useTransform(morphScaleX, v => 1 / v),
+                  scaleY: useTransform(morphScaleY, v => 1 / v),
                   borderWidth: 2,
                   borderStyle: "solid",
                   borderColor: "rgba(255,255,255,0.15)",
@@ -223,8 +226,17 @@ export const DeviceStage = memo(function DeviceStage({ progress }: DeviceStagePr
                 </motion.div>
 
                 {/* Desktop screen content (appears after blackout) */}
-                <motion.div className="absolute inset-0 z-[10]" style={{ opacity: s5 }}>
-                  <Screen5WebDashboard />
+                <motion.div 
+                  className="absolute inset-0 flex items-center justify-center z-[10]" 
+                  style={{ 
+                    opacity: s5,
+                    scaleX: useTransform(morphScaleX, v => 1 / v),
+                    scaleY: useTransform(morphScaleY, v => 1 / v),
+                  }}
+                >
+                  <div className="w-[1000px] h-[600px] max-w-none origin-center">
+                    <Screen5WebDashboard />
+                  </div>
                 </motion.div>
 
                 {/* Screen dimmer (early reveal) */}
