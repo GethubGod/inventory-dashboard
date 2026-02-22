@@ -32,21 +32,21 @@ interface DeviceStageProps {
 export const DeviceStage = memo(function DeviceStage({ progress }: DeviceStageProps) {
 
   // ―――――――――――――――――――――――――――――――――――――――――――
-  //  PHONE RISE & PAN (And Return to center during morph)
+  //  PHONE RISE & LEFT PAN
   //  At p=0.00: phone starts high enough to peek ~20-30% beneath the CTA
-  //  At p=0.10: phone rises into full view at Center
-  //  At p=0.22 - 0.28: phone pans to the left
-  //  At p=0.74 - 0.86: phone pans back to center DURING stretch morph
+  //  At p=0.08 - 0.20: phone rises into full view at Center
+  //  At p=0.30 - 0.40: phone pans to the left
+  //  At p=0.75 - 0.90: phone pans back to center DURING stretch morph
   // ―――――――――――――――――――――――――――――――――――――――――――
-  const phoneY = useTransform(progress, [0.00, 0.10], [550, 0]);
-  const phoneX = useTransform(progress, [0.22, 0.28, 0.74, 0.86], ["0vw", "-22vw", "-22vw", "0vw"]);
+  const phoneY = useTransform(progress, [0.08, 0.20], [550, 0]);
+  const phoneX = useTransform(progress, [0.30, 0.40, 0.75, 0.90], ["0vw", "-22vw", "-22vw", "0vw"]);
   
   // Opacity & Shadow during initial rise
-  const phoneOpacity = useTransform(progress, [0.00, 0.05], [0.85, 1]);
-  const phoneShadowOpacity = useTransform(progress, [0.05, 0.10, 0.72, 0.78], [0, 0.55, 0.55, 0]);
+  const phoneOpacity = useTransform(progress, [0.10, 0.15], [0.85, 1]);
+  const phoneShadowOpacity = useTransform(progress, [0.10, 0.20, 0.75, 0.80], [0, 0.55, 0.55, 0]);
 
   // Overall phone scale (slightly larger Pro Max feel at rest = 1.0)
-  const phoneScale = useTransform(progress, [0.00, 0.10, 0.72, 0.76], [0.95, 1.0, 1.0, 1.0]);
+  const phoneScale = useTransform(progress, [0.10, 0.20, 0.75, 0.80], [0.95, 1.0, 1.0, 1.0]);
 
   // Screen dimmer during early reveal (keeps content dark)
   const screenDimOpacity = useTransform(progress, [0.20, 0.30], [0.85, 0]);
@@ -58,10 +58,10 @@ export const DeviceStage = memo(function DeviceStage({ progress }: DeviceStagePr
   //  PHONE SCREEN CROSSFADES
   //  4 mobile screens — sequential, near-instant swap
   // ―――――――――――――――――――――――――――――――――――――――――――
-  const s1 = useTransform(progress, [0.26, 0.30, 0.395, 0.40], [0, 1, 1, 0]);
-  const s2 = useTransform(progress, [0.40, 0.405, 0.515, 0.52], [0, 1, 1, 0]);
-  const s3 = useTransform(progress, [0.52, 0.525, 0.635, 0.64], [0, 1, 1, 0]);
-  const s4 = useTransform(progress, [0.64, 0.645, 0.72, 0.74], [0, 1, 1, 0]);
+  const s1 = useTransform(progress, [0.38, 0.40, 0.455, 0.46], [0, 1, 1, 0]);
+  const s2 = useTransform(progress, [0.46, 0.465, 0.535, 0.54], [0, 1, 1, 0]);
+  const s3 = useTransform(progress, [0.54, 0.545, 0.615, 0.62], [0, 1, 1, 0]);
+  const s4 = useTransform(progress, [0.62, 0.625, 0.70, 0.72], [0, 1, 1, 0]);
 
   // ―――――――――――――――――――――――――――――――――――――――――――
   //  PHONE → LAPTOP STRETCH MORPH (0.72 – 0.88)
@@ -69,21 +69,21 @@ export const DeviceStage = memo(function DeviceStage({ progress }: DeviceStagePr
   // ―――――――――――――――――――――――――――――――――――――――――――
 
   // Screen blackout: quick fade to black at morph start, then reveal dashboard
-  const screenBlackout = useTransform(progress, [0.72, 0.76, 0.85, 0.88], [0, 1, 1, 0]);
+  const screenBlackout = useTransform(progress, [0.75, 0.78, 0.88, 0.90], [0, 1, 1, 0]);
 
   // Layout stretch: phone dimensions → laptop dimensions via CSS custom property
-  const morphP = useTransform(progress, [0.74, 0.86], [0, 1]);
+  const morphP = useTransform(progress, [0.75, 0.90], [0, 1]);
 
   // Shell crossfade: phone shell (rounded) fades out, laptop shell fades in
-  const phoneShellOpacity = useTransform(progress, [0.76, 0.84], [1, 0]);
-  const laptopShellOpacity = useTransform(progress, [0.78, 0.86], [0, 1]);
+  const phoneShellOpacity = useTransform(progress, [0.76, 0.88], [1, 0]);
+  const laptopShellOpacity = useTransform(progress, [0.78, 0.90], [0, 1]);
 
   // Dashboard screen content
-  const s5 = useTransform(progress, [0.82, 0.88], [0, 1]);
+  const s5 = useTransform(progress, [0.85, 0.90], [0, 1]);
 
   // Keyboard base slides up
-  const baseOpacity = useTransform(progress, [0.84, 0.90], [0, 1]);
-  const baseY = useTransform(progress, [0.84, 0.90], [20, 0]);
+  const baseOpacity = useTransform(progress, [0.85, 0.92], [0, 1]);
+  const baseY = useTransform(progress, [0.85, 0.92], [20, 0]);
 
   // ―――――――――――――――――――――――――――――――――――――――――――
   //  LAPTOP CLOSE (0.90 – 1.00)
@@ -105,8 +105,10 @@ export const DeviceStage = memo(function DeviceStage({ progress }: DeviceStagePr
           className="relative origin-center transform-gpu"
           style={{
             "--morph-p": morphP,
-            width: "calc( min(380px, 45vw) + (85vw - min(380px, 45vw)) * var(--morph-p) )",
-            height: "calc( min(950px, calc(100vh - 120px)) + (80vh - min(950px, calc(100vh - 120px))) * var(--morph-p) )",
+            "--phone-w": "min(340px, 40vw)",
+            "--phone-h": "calc(var(--phone-w) * 2.16)", // Sleek Pro Max proportion (19.5/9 is ~2.16)
+            width: "calc( var(--phone-w) + (85vw - var(--phone-w)) * var(--morph-p) )",
+            height: "calc( var(--phone-h) + (80vh - var(--phone-h)) * var(--morph-p) )",
             x: phoneX,
             y: phoneY,
             opacity: phoneOpacity,

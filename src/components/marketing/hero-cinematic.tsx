@@ -10,7 +10,7 @@ import { useMotionPreferences } from "@/lib/motion";
 import { DeviceStage } from "@/components/marketing/device-stage";
 import { TextCallouts } from "@/components/marketing/text-callouts";
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 
 // ─────────────────────────────────────────────────
 // Custom scroll hooks (passive scroll events + MotionValue)
@@ -90,17 +90,19 @@ export function HeroCinematic() {
   );
 
   // ─── TEXT/CTA ──────────────────────────────────
-  // Text must fade out BEFORE phone reaches center (z-20 behind z-30 phone)
-  // Adjusted text coordinates to fade exactly as phone rises, removing overlap
-  const textY = useTransform(scrollYProgress, [0.05, 0.18], [0, -100]);
-  const textScale = useTransform(scrollYProgress, [0.05, 0.18], [1, 0.92]);
-  const textOpacity = useTransform(scrollYProgress, [0.00, 0.08, 0.18], [1, 1, 0]);
+  // Hero text absolutely must be gone before overlay text enters at 0.15
+  const textY = useTransform(scrollYProgress, [0.00, 0.08], [0, -100]);
+  const textScale = useTransform(scrollYProgress, [0.00, 0.08], [1, 0.92]);
+  const textOpacity = useTransform(scrollYProgress, [0.00, 0.08], [1, 0]);
 
   // ─── AURORA BLOBS ──────────────────────────────
   const blobOpacity = useTransform(scrollYProgress, [0, 0.4, 0.7], [1, 0.5, 0]);
 
   // ─── VIGNETTE ──────────────────────────────────
   const vignetteOpacity = useTransform(scrollYProgress, [0, 0.85, 1], [0.6, 0.15, 0]);
+
+  // ─── SCROLL INDICATOR ──────────────────────────
+  const indicatorOpacity = useTransform(scrollYProgress, [0.00, 0.05], [0.6, 0]);
 
   // ─── REDUCED MOTION FALLBACK ───────────────────
   if (shouldReduceMotion) {
@@ -111,7 +113,7 @@ export function HeroCinematic() {
   return (
     <>
       {/* Scroll spacer */}
-      <section ref={heroRef} style={{ height: "400vh", position: "relative" }} />
+      <section ref={heroRef} style={{ height: "600vh", position: "relative" }} />
 
       {/* Fixed overlay */}
       <motion.div
@@ -156,25 +158,27 @@ export function HeroCinematic() {
           <DeviceStage progress={scrollYProgress} />
 
           {/* ── Overlay Text (Phase 1 & 2) ── */}
-          {/* Sits above the device, high contrast, staggered entry */}
+          {/* Sits above the device, high contrast, staggered entry sliding UP from bottom */}
           <motion.div
             className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-40"
-            style={{
-              y: useTransform(scrollYProgress, [0.0, 0.2, 0.28, 0.35], [50, 0, 0, -50])
-            }}
           >
+            {/* Line 1 */}
             <motion.h1
-              className="text-[12vw] leading-none font-bold tracking-tighter text-white drop-shadow-2xl"
+              className="absolute text-[12vw] leading-none font-bold tracking-tighter text-white drop-shadow-2xl"
               style={{
-                opacity: useTransform(scrollYProgress, [0.0, 0.15, 0.28, 0.35], [0, 1, 1, 0])
+                y: useTransform(scrollYProgress, [0.15, 0.28, 0.33], ["50vh", "0vh", "-30vh"]),
+                opacity: useTransform(scrollYProgress, [0.15, 0.18, 0.25, 0.28], [0, 1, 1, 0])
               }}
             >
               All in one
             </motion.h1>
+            
+            {/* Line 2 (Staggered later entry) */}
             <motion.h1
-              className="text-[14vw] leading-none font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-zinc-200 drop-shadow-2xl"
+              className="absolute text-[14vw] leading-none font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-zinc-200 drop-shadow-2xl mt-[12vw]"
               style={{
-                opacity: useTransform(scrollYProgress, [0.10, 0.25, 0.28, 0.35], [0, 1, 1, 0])
+                y: useTransform(scrollYProgress, [0.20, 0.32, 0.36], ["50vh", "0vh", "-30vh"]),
+                opacity: useTransform(scrollYProgress, [0.20, 0.23, 0.29, 0.32], [0, 1, 1, 0])
               }}
             >
               solution
@@ -183,20 +187,13 @@ export function HeroCinematic() {
 
           {/* ── Headline/CTA Group (z-20 — behind phone) ── */}
           <motion.div
-            className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none px-4"
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none px-4 -mt-16"
             style={{
               y: textY,
               scale: textScale,
               opacity: textOpacity,
             }}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-8 pointer-events-auto">
-              <Sparkles className="h-4 w-4 text-lime-400" />
-              <span className="text-sm font-medium tracking-wide uppercase text-white/80">
-                Next Gen Inventory
-              </span>
-            </div>
-
             <h1 className="text-5xl sm:text-6xl md:text-8xl font-bold tracking-tighter leading-[1.05] mb-6 text-center text-white">
               Inventory that runs <br className="hidden md:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-lime-400">
@@ -248,12 +245,32 @@ export function HeroCinematic() {
               }
             ]}
             windows={[
-              [0.28, 0.40],
-              [0.40, 0.52],
-              [0.52, 0.64],
-              [0.64, 0.74]
+              [0.38, 0.46],
+              [0.46, 0.54],
+              [0.54, 0.62],
+              [0.62, 0.70]
             ]}
           />
+
+          {/* ── Scroll Indicator (Fades out early) ── */}
+          {!shouldReduceMotion && (
+            <motion.div
+              className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none z-50"
+              style={{ opacity: indicatorOpacity }}
+            >
+              <span className="text-xs font-medium text-white/50 tracking-widest uppercase mb-2">Scroll</span>
+              <motion.div
+                animate={{ y: [0, 8, 0] }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                <ChevronDown className="h-4 w-4 text-white/50" />
+              </motion.div>
+            </motion.div>
+          )}
         </div>
       </motion.div>
     </>

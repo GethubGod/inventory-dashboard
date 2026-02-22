@@ -1,4 +1,5 @@
 import Link from "next/link";
+import {Brand} from "@/components/marketing/brand";
 
 export function Footer() {
   return (
@@ -6,11 +7,16 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-16">
           <div className="col-span-2 lg:col-span-2">
-            <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight text-white mb-6 w-fit">
-              <span>🐟 babytuna</span>
+            <Link href="/" className="mb-6 w-fit">
+              <Brand
+                variant="light"
+                text="Babytuna Systems"
+                textClassName="text-xl leading-none whitespace-nowrap"
+                className="text-white"
+              />
             </Link>
             <p className="text-sm max-w-xs leading-relaxed text-zinc-400">
-              The intelligent inventory operating system for modern food and beverage operators.
+              Intelligent inventory system built by restaurant owner for restaurant needs.
             </p>
           </div>
           

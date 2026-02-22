@@ -23,7 +23,7 @@ export function CTASection() {
             Start <span className="text-teal-400">cooking.</span>
           </h2>
           <p className="text-xl text-zinc-400 mb-12 max-w-2xl mx-auto">
-            Join hundreds of operators who have eliminated inventory headaches and reclaimed 10+ hours a week.
+            Join restaurant owners who have eliminated inventory headaches and reclaimed hours per week.
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

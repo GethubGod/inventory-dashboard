@@ -8,12 +8,12 @@ const steps = [
   {
     num: "01",
     title: "Connect your POS & Suppliers",
-    desc: "Link Square, Toast, or Clover in one click. Upload your current vendor guides and past invoices. We handle the digitizing."
+    desc: "Link Square, Toast, or Clover in one click. Upload your current vendor guides and past invoices. We handle the rest."
   },
   {
     num: "02",
-    title: "Speak your inventory",
-    desc: "Walk the walk-in and just talk to the app. 'I have 2 cases of roma tomatoes and half a box of lemons.' We log it instantly."
+    title: "Calibrate System",
+    desc: "Check and adjust orders specifics to your unique needs and preferences."
   },
   {
     num: "03",

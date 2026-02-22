@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useState } from "react";
+import { Brand } from "@/components/marketing/brand";
 import { Menu, X } from "lucide-react";
 
 export function Navbar() {
@@ -48,6 +49,13 @@ export function Navbar() {
       "rgba(11,11,11,0.85)",
     ]
   );
+  // brand swap timeline from dark to light
+  const brandSwap = useTransform(scrollY, [2600, 3400], [0, 1]);
+
+  //crossfade two logo variants
+  const lightBrandOpacity = useTransform(brandSwap, [0, 1], [1, 0]);
+  const darkBrandOpacity = useTransform(brandSwap, [0, 1], [0, 1]);
+
 
   // ─── Liquid-glass pill backgrounds ─────────────────
   const pillBg = useTransform(
@@ -84,8 +92,46 @@ export function Navbar() {
       <div className="mx-auto flex h-[60px] lg:h-[72px] w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 relative">
         {/* Logo */}
         <div className="flex items-center">
-          <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight hover:opacity-80 transition-opacity">
-            <span>🐟 babytuna</span>
+          <Link
+            href="/"
+            aria-label="Babytuna homepage"
+            className="relative inline-flex h-7 items-center"
+          >
+            {/* Invisible sizer keeps the link width equal to the full brand width */}
+            <span aria-hidden="true" className="invisible">
+              <Brand
+                variant="light"
+                text="Babytuna Systems"
+                textClassName="text-xl leading-none whitespace-nowrap"
+                className="text-current"
+              />
+            </span>
+
+            <motion.span
+              aria-hidden="true"
+              className="absolute inset-0 flex items-center pointer-events-none"
+              style={{ opacity: lightBrandOpacity}}
+            >
+              <Brand
+                variant="light"
+                text="Babytuna Systems"
+                textClassName="text-xl leading-none whitespace-nowrap"
+                className="text-current"
+              />
+            </motion.span>
+
+            <motion.span
+              aria-hidden="true"
+              className="absolute inset-0 flex items-center pointer-events-none"
+              style={{ opacity: darkBrandOpacity}}
+            >
+              <Brand
+                variant="dark"
+                text="Babytuna Systems"
+                textClassName="text-xl leading-none whitespace-nowrap"
+                className="text-current"
+              />
+            </motion.span>
           </Link>
         </div>
 

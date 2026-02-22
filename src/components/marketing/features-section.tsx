@@ -7,7 +7,7 @@ import { generateStaggerConfig, transitionVariations } from "@/lib/motion";
 const features = [
   {
     title: "Voice-First Ordering",
-    description: "Speak your prep list in any language. We convert it instantly.",
+    description: "Request items in any language. Tuna Specialist convert it instantly and accurately.",
     visual: (
       <div className="flex items-center gap-3 w-full p-3 bg-white border border-black/5 rounded-xl shadow-sm">
         <div className="h-8 w-8 rounded-full bg-teal-500/10 flex items-center justify-center shrink-0">
@@ -21,8 +21,8 @@ const features = [
     )
   },
   {
-    title: "AI Demand Forecasting",
-    description: "Predict exactly what you'll sell based on weather and history.",
+    title: "Demand Forecasting",
+    description: "Predict exactly inventory you'll sell based on weather and history.",
     visual: (
       <div className="relative h-14 w-full bg-white border border-black/5 rounded-xl shadow-sm overflow-hidden flex items-end px-3">
         <svg className="w-full h-8" preserveAspectRatio="none" viewBox="0 0 100 100">
@@ -34,7 +34,7 @@ const features = [
   },
   {
     title: "Smart Auto-Routing",
-    description: "Ingredients are automatically grouped and routed to preferred suppliers.",
+    description: "Items ordered are automatically grouped and routed to preferred suppliers.",
     visual: (
       <div className="flex gap-2 w-full p-2 bg-white border border-black/5 rounded-xl shadow-sm">
         <div className="flex-1 bg-zinc-50 border border-black/5 rounded-lg p-2 text-center">
@@ -85,7 +85,7 @@ const features = [
   },
   {
     title: "Multi-Location Ready",
-    description: "Manage fifty restaurants from a single dashboard.",
+    description: "Manage many restaurants from a single dashboard.",
     visual: (
       <div className="relative w-full h-14 bg-white border border-black/5 rounded-xl shadow-sm flex items-center justify-center gap-2 px-3 overflow-hidden">
         <div className="absolute left-0 w-8 h-full bg-gradient-to-r from-white to-transparent z-10" />
@@ -122,7 +122,7 @@ export function FeaturesSection() {
             variants={transitionVariations.fadeUp}
             className="text-lg text-zinc-600 leading-relaxed"
           >
-            Babytuna isn't just a spreadsheet in the cloud. It's an active intelligence engine built specifically for the chaos of commercial kitchens.
+            Developed in real restaurants by owners trying to solve daily inefficiencies --an active intelligence engine built to simplify inventory, ordering, and fulfillment.
           </motion.p>
         </motion.div>
 
