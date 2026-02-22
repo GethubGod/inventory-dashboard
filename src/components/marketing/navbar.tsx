@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence, type Variants } from "framer-motion";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Brand } from "@/components/marketing/brand";
 import { Menu, X } from "lucide-react";
@@ -140,7 +140,9 @@ export function Navbar() {
 
   // ─── Menu animation variants ──────────────────────
   // Panel slides down from top, slight scale
-  const panelVariants = shouldReduceMotion
+  const EASE_APPLE = [0.25, 0.46, 0.45, 0.94] as const;
+
+  const panelVariants: Variants = shouldReduceMotion
     ? { hidden: { opacity: 0 }, visible: { opacity: 1 }, exit: { opacity: 0 } }
     : {
         hidden: { opacity: 0, y: -12, scale: 0.97 },
@@ -148,24 +150,24 @@ export function Navbar() {
           opacity: 1,
           y: 0,
           scale: 1,
-          transition: { duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] },
+          transition: { duration: 0.28, ease: EASE_APPLE },
         },
         exit: {
           opacity: 0,
           y: -8,
           scale: 0.97,
-          transition: { duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] },
+          transition: { duration: 0.18, ease: EASE_APPLE },
         },
       };
 
-  const itemVariants = shouldReduceMotion
-    ? {}
+  const itemVariants: Variants = shouldReduceMotion
+    ? { hidden: { opacity: 0 }, visible: { opacity: 1 } }
     : {
         hidden: { opacity: 0, y: 8 },
         visible: (i: number) => ({
           opacity: 1,
           y: 0,
-          transition: { delay: 0.06 + i * 0.04, duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] },
+          transition: { delay: 0.06 + i * 0.04, duration: 0.25, ease: EASE_APPLE },
         }),
       };
 
