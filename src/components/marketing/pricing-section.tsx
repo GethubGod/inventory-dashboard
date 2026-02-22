@@ -15,7 +15,7 @@ const plans = [
       "Basic supplier routing",
       "Single location",
       "Multi-location support",
-      "Quick Order feature",
+      "Access to mobile app",
     ],
     cta: "Start Free",
     highlight: false,

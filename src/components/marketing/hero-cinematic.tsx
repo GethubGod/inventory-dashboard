@@ -24,23 +24,42 @@ function useSectionProgress(ref: React.RefObject<HTMLElement | null>) {
     const el = ref.current;
     if (!el) return;
 
-    function update() {
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const windowH = window.innerHeight;
-      const totalScroll = el.offsetHeight - windowH;
-      if (totalScroll <= 0) return;
-      const scrolled = -rect.top;
-      const p = Math.max(0, Math.min(1, scrolled / totalScroll));
-      progress.set(p);
+    let elTop = 0;
+    let totalScroll = 0;
+    let ticking = false;
+
+    function recache() {
+      const rect = el!.getBoundingClientRect();
+      elTop = rect.top + window.scrollY;
+      totalScroll = el!.offsetHeight - window.innerHeight;
     }
 
+    function update() {
+      ticking = false;
+      if (totalScroll <= 0) return;
+      const scrolled = window.scrollY - elTop;
+      progress.set(Math.max(0, Math.min(1, scrolled / totalScroll)));
+    }
+
+    function onScroll() {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    }
+
+    function onResize() {
+      recache();
+      update();
+    }
+
+    recache();
     update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize, { passive: true });
     return () => {
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
     };
   }, [ref, progress]);
 
@@ -54,16 +73,42 @@ function useInSection(ref: React.RefObject<HTMLElement | null>) {
     const el = ref.current;
     if (!el) return;
 
-    function update() {
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const isIn = rect.top <= 0 && rect.bottom > 0;
-      visible.set(isIn ? 1 : 0);
+    let elTop = 0;
+    let elBottom = 0;
+    let ticking = false;
+
+    function recache() {
+      const rect = el!.getBoundingClientRect();
+      elTop = rect.top + window.scrollY;
+      elBottom = elTop + el!.offsetHeight;
     }
 
+    function update() {
+      ticking = false;
+      const sy = window.scrollY;
+      visible.set(sy >= elTop && sy < elBottom ? 1 : 0);
+    }
+
+    function onScroll() {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    }
+
+    function onResize() {
+      recache();
+      update();
+    }
+
+    recache();
     update();
-    window.addEventListener("scroll", update, { passive: true });
-    return () => window.removeEventListener("scroll", update);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+    };
   }, [ref, visible]);
 
   return visible;
@@ -105,13 +150,18 @@ export function HeroCinematic() {
   // ─── SCROLL INDICATOR ──────────────────────────
   const indicatorOpacity = useTransform(scrollYProgress, [0.00, 0.05], [0.6, 0]);
 
+  // ─── OVERLAY TEXT TRANSFORMS (hoisted from JSX) ─
+  const overlayLine1Y = useTransform(scrollYProgress, [0.15, 0.28, 0.33], ["50vh", "0vh", "-30vh"]);
+  const overlayLine1Opacity = useTransform(scrollYProgress, [0.15, 0.18, 0.25, 0.28], [0, 1, 1, 0]);
+  const overlayLine2Y = useTransform(scrollYProgress, [0.20, 0.32, 0.36], ["50vh", "0vh", "-30vh"]);
+  const overlayLine2Opacity = useTransform(scrollYProgress, [0.20, 0.23, 0.29, 0.32], [0, 1, 1, 0]);
+
   // ─── REDUCED MOTION FALLBACK ───────────────────
   if (shouldReduceMotion) {
     return <ReducedMotionFallback />;
   }
 
-  // ─── Scroll spacer height — longer on mobile for more dwell time ───
-  const scrollHeight = isMobile ? "750vh" : "600vh";
+  const scrollHeight = isMobile ? "600vh" : "500vh";
 
   // ─── MAIN CINEMATIC ────────────────────────────
   return (
@@ -165,24 +215,15 @@ export function HeroCinematic() {
           <motion.div
             className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-40"
           >
-            {/* Line 1 */}
             <motion.h1
               className="absolute text-[14vw] md:text-[12vw] leading-none font-bold tracking-tighter text-white drop-shadow-2xl"
-              style={{
-                y: useTransform(scrollYProgress, [0.15, 0.28, 0.33], ["50vh", "0vh", "-30vh"]),
-                opacity: useTransform(scrollYProgress, [0.15, 0.18, 0.25, 0.28], [0, 1, 1, 0])
-              }}
+              style={{ y: overlayLine1Y, opacity: overlayLine1Opacity }}
             >
               All in one
             </motion.h1>
-            
-            {/* Line 2 (Staggered later entry) */}
             <motion.h1
               className="absolute text-[16vw] md:text-[14vw] leading-none font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-zinc-200 drop-shadow-2xl mt-[12vw]"
-              style={{
-                y: useTransform(scrollYProgress, [0.20, 0.32, 0.36], ["50vh", "0vh", "-30vh"]),
-                opacity: useTransform(scrollYProgress, [0.20, 0.23, 0.29, 0.32], [0, 1, 1, 0])
-              }}
+              style={{ y: overlayLine2Y, opacity: overlayLine2Opacity }}
             >
               solution
             </motion.h1>

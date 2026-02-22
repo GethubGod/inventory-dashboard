@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useRef, useEffect } from "react";
 import { motion, MotionValue, useTransform } from "framer-motion";
 import { Screen1Suggestions } from "./screens/screen-1-suggestions";
 import { Screen2Voice } from "./screens/screen-2-voice";
@@ -167,17 +167,19 @@ export const DeviceStage = memo(function DeviceStage({ progress, isMobile }: Dev
   const hingeRotate = useTransform(progress, [0.90, 1.00], [0, 0]);
   const closeFade = useTransform(progress, [0.92, 1.00], [1, 1]);
 
-  // ─── "Manage anywhere" headline ───────────────────
-  const headlineOpacity = useTransform(
-    progress,
-    isMobile ? [morphStart, morphEnd - 0.02, morphEnd] : [0.78, 0.86, 0.90],
-    [0, 0, 1]
-  );
-  const headlineY = useTransform(
-    progress,
-    isMobile ? [morphStart, morphEnd] : [0.78, 0.90],
-    [60, 0]
-  );
+  const screenAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = screenAreaRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      const scale = Math.min(width / DASHBOARD_W, height / DASHBOARD_H);
+      el.style.setProperty('--dash-scale', String(scale));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // ─── Phone CSS vars ───────────────────────────────
   const phoneWidth = isMobile ? "min(300px, 80vw)" : "min(340px, 40vw)";
@@ -193,23 +195,6 @@ export const DeviceStage = memo(function DeviceStage({ progress, isMobile }: Dev
 
   return (
     <div className="absolute inset-0 z-30 pointer-events-none">
-      {/* ═══ "MANAGE ANYWHERE" HEADLINE ═══ */}
-      <motion.div
-        className="absolute left-0 right-0 z-50 pointer-events-none flex flex-col items-center text-center"
-        style={{
-          opacity: headlineOpacity,
-          y: headlineY,
-          top: isMobile ? "6%" : "4%",
-        }}
-      >
-        <span className="block text-3xl md:text-5xl font-bold tracking-tight text-white leading-[1.1]">
-          Manage
-        </span>
-        <span className="block text-3xl md:text-5xl font-bold tracking-tight text-zinc-400 leading-[1.1]">
-          anywhere.
-        </span>
-      </motion.div>
-
       <div
         className="absolute inset-0 flex items-center justify-center overflow-hidden"
         style={{ paddingTop: NAV_H + SAFE_PAD, paddingBottom: SAFE_PAD }}
@@ -285,16 +270,7 @@ export const DeviceStage = memo(function DeviceStage({ progress, isMobile }: Dev
               {/* ─── Screen area (shared between phone & laptop) ─── */}
               <motion.div
                 className="absolute inset-[3px] z-[5] overflow-hidden"
-                ref={(el: HTMLDivElement | null) => {
-                  if (el) {
-                    const ro = new ResizeObserver(([entry]) => {
-                      const { width, height } = entry.contentRect;
-                      const scale = Math.min(width / DASHBOARD_W, height / DASHBOARD_H);
-                      el.style.setProperty('--dash-scale', String(scale));
-                    });
-                    ro.observe(el);
-                  }
-                }}
+                ref={screenAreaRef}
                 style={{ borderRadius: "calc(48px + (15px - 48px) * var(--morph-p))" }}
               >
                 {/* Dynamic Island — proportional sizing */}
@@ -361,11 +337,11 @@ export const DeviceStage = memo(function DeviceStage({ progress, isMobile }: Dev
 
                 {/* Dashboard content — scale-to-fit inside laptop frame */}
                 <motion.div
-                  className="absolute inset-0 flex items-center justify-center z-[10] overflow-hidden"
+                  className="absolute inset-0 z-[10] overflow-hidden"
                   style={{ opacity: s5 }}
                 >
                   <div
-                    className="origin-top-left bg-white"
+                    className="origin-top-left bg-white transform-gpu"
                     style={{
                       width: DASHBOARD_W,
                       height: DASHBOARD_H,
