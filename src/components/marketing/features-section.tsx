@@ -102,25 +102,25 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="py-24 md:py-32 bg-[#fafaf9] text-zinc-900">
+    <section id="features" className="py-14 md:py-32 bg-[#fafaf9] text-zinc-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="initial"
           whileInView="animate"
           viewport={{ once: true, margin: "-100px" }}
           variants={generateStaggerConfig(0.1)}
-          className="text-center max-w-3xl mx-auto mb-20"
+          className="text-center max-w-3xl mx-auto mb-10 md:mb-20"
         >
           <motion.h2
             variants={transitionVariations.fadeUp}
-            className="text-4xl md:text-5xl font-bold tracking-tight mb-6"
+            className="text-3xl md:text-5xl font-bold tracking-tight mb-4 md:mb-6"
           >
             Everything you need. <br />
-            <span className="text-zinc-500 font-normal">Nothing you don't.</span>
+            <span className="text-zinc-500 font-normal">Nothing you don&apos;t.</span>
           </motion.h2>
           <motion.p
             variants={transitionVariations.fadeUp}
-            className="text-lg text-zinc-600 leading-relaxed"
+            className="text-base md:text-lg text-zinc-600 leading-relaxed"
           >
             Developed in real restaurants by owners trying to solve daily inefficiencies --an active intelligence engine built to simplify inventory, ordering, and fulfillment.
           </motion.p>
@@ -131,7 +131,7 @@ export function FeaturesSection() {
            whileInView={{ opacity: 1, scaleX: 1 }}
            viewport={{ once: true, margin: "-100px" }}
            transition={{ duration: 0.8, ease: "easeInOut" }}
-           className="w-full h-px bg-gradient-to-r from-transparent via-teal-500/20 to-transparent mb-16 origin-left"
+           className="w-full h-px bg-gradient-to-r from-transparent via-teal-500/20 to-transparent mb-8 md:mb-16 origin-left"
         />
 
         <motion.div
@@ -139,19 +139,19 @@ export function FeaturesSection() {
           whileInView="animate"
           viewport={{ once: true, margin: "-100px" }}
           variants={generateStaggerConfig(0.1)}
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 gap-y-16"
+          className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 md:gap-y-16"
         >
           {features.map((feature, index) => (
-            <motion.div key={index} variants={transitionVariations.fadeUp} className="group relative pr-4">
-              <div className="mb-6 w-full max-w-[200px] bg-zinc-50 border border-black/5 rounded-2xl p-4 flex items-center justify-center relative overflow-hidden group-hover:bg-teal-50/50 transition-colors">
+            <motion.div key={index} variants={transitionVariations.fadeUp} className="group relative md:pr-4">
+              <div className="mb-3 md:mb-6 w-full max-w-[200px] bg-zinc-50 border border-black/5 rounded-xl md:rounded-2xl p-3 md:p-4 flex items-center justify-center relative overflow-hidden group-hover:bg-teal-50/50 transition-colors">
                  {/* Visual Micro-component injection */}
                  <div className="w-full relative z-10">
                    {feature.visual}
                  </div>
                  <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-              <p className="text-zinc-500 text-sm leading-relaxed">{feature.description}</p>
+              <h3 className="text-sm md:text-lg font-semibold mb-1 md:mb-2">{feature.title}</h3>
+              <p className="text-zinc-500 text-xs md:text-sm leading-relaxed">{feature.description}</p>
             </motion.div>
           ))}
         </motion.div>

@@ -9,6 +9,7 @@ import {
 import { useMotionPreferences } from "@/lib/motion";
 import { DeviceStage } from "@/components/marketing/device-stage";
 import { TextCallouts } from "@/components/marketing/text-callouts";
+import { useIsMobile } from "@/components/marketing/mobile-constants";
 import Link from "next/link";
 import { ArrowRight, ChevronDown } from "lucide-react";
 
@@ -75,6 +76,7 @@ function useInSection(ref: React.RefObject<HTMLElement | null>) {
 export function HeroCinematic() {
   const heroRef = useRef<HTMLDivElement>(null);
   const { shouldReduceMotion } = useMotionPreferences();
+  const isMobile = useIsMobile();
 
   const scrollYProgress = useSectionProgress(heroRef);
   const inSection = useInSection(heroRef);
@@ -90,7 +92,6 @@ export function HeroCinematic() {
   );
 
   // ─── TEXT/CTA ──────────────────────────────────
-  // Hero text absolutely must be gone before overlay text enters at 0.15
   const textY = useTransform(scrollYProgress, [0.00, 0.08], [0, -100]);
   const textScale = useTransform(scrollYProgress, [0.00, 0.08], [1, 0.92]);
   const textOpacity = useTransform(scrollYProgress, [0.00, 0.08], [1, 0]);
@@ -109,11 +110,14 @@ export function HeroCinematic() {
     return <ReducedMotionFallback />;
   }
 
+  // ─── Scroll spacer height — longer on mobile for more dwell time ───
+  const scrollHeight = isMobile ? "750vh" : "600vh";
+
   // ─── MAIN CINEMATIC ────────────────────────────
   return (
     <>
       {/* Scroll spacer */}
-      <section ref={heroRef} style={{ height: "600vh", position: "relative" }} />
+      <section ref={heroRef} style={{ height: scrollHeight, position: "relative" }} />
 
       {/* Fixed overlay */}
       <motion.div
@@ -155,16 +159,15 @@ export function HeroCinematic() {
           />
 
           {/* ── Device Stage (z-30) ── */}
-          <DeviceStage progress={scrollYProgress} />
+          <DeviceStage progress={scrollYProgress} isMobile={isMobile} />
 
           {/* ── Overlay Text (Phase 1 & 2) ── */}
-          {/* Sits above the device, high contrast, staggered entry sliding UP from bottom */}
           <motion.div
             className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-40"
           >
             {/* Line 1 */}
             <motion.h1
-              className="absolute text-[12vw] leading-none font-bold tracking-tighter text-white drop-shadow-2xl"
+              className="absolute text-[14vw] md:text-[12vw] leading-none font-bold tracking-tighter text-white drop-shadow-2xl"
               style={{
                 y: useTransform(scrollYProgress, [0.15, 0.28, 0.33], ["50vh", "0vh", "-30vh"]),
                 opacity: useTransform(scrollYProgress, [0.15, 0.18, 0.25, 0.28], [0, 1, 1, 0])
@@ -175,7 +178,7 @@ export function HeroCinematic() {
             
             {/* Line 2 (Staggered later entry) */}
             <motion.h1
-              className="absolute text-[14vw] leading-none font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-zinc-200 drop-shadow-2xl mt-[12vw]"
+              className="absolute text-[16vw] md:text-[14vw] leading-none font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-zinc-200 drop-shadow-2xl mt-[12vw]"
               style={{
                 y: useTransform(scrollYProgress, [0.20, 0.32, 0.36], ["50vh", "0vh", "-30vh"]),
                 opacity: useTransform(scrollYProgress, [0.20, 0.23, 0.29, 0.32], [0, 1, 1, 0])
@@ -201,7 +204,7 @@ export function HeroCinematic() {
               </span>
             </h1>
 
-            <p className="text-xl md:text-2xl font-light mb-10 max-w-2xl mx-auto text-center text-zinc-400">
+            <p className="text-lg md:text-2xl font-light mb-10 max-w-2xl mx-auto text-center text-zinc-400">
               Order with your voice. Forecast with AI.
               <br className="hidden sm:block" />
               Never guess what to prep again.
@@ -215,7 +218,7 @@ export function HeroCinematic() {
             </Link>
           </motion.div>
 
-          {/* ── Text Callouts (Phase 3) ── */}
+          {/* ── Text Callouts (Phase 3) — Desktop only ── */}
           <TextCallouts 
             progress={scrollYProgress} 
             contents={[
@@ -276,10 +279,6 @@ export function HeroCinematic() {
     </>
   );
 }
-
-// ─────────────────────────────────────────────────
-// Sub-components
-// ─────────────────────────────────────────────────
 
 // ─────────────────────────────────────────────────
 // Reduced Motion Fallback
