@@ -127,13 +127,12 @@ export function HeroCinematic() {
   const inSection = useInSection(heroRef);
 
   // ─── BACKGROUND ────────────────────────────────
-  const bg = useTransform(
+  // Use opacity on a pre-rendered gradient instead of animating backgroundColor
+  // (color interpolation triggers repaint every frame; opacity is GPU-composited)
+  const bgLightOpacity = useTransform(
     scrollYProgress,
-    [0.00, 0.20, 0.40, 0.60, 0.70, 0.80, 0.90, 1.00],
-    [
-      "#000000", "#020202", "#050505", "#0a0a0a",
-      "#1a1a1a", "#4a4a4a", "#e5e5e5", "#fafaf9",
-    ]
+    [0.00, 0.60, 0.80, 1.00],
+    [0, 0, 0.85, 1]
   );
 
   // ─── TEXT/CTA ──────────────────────────────────
@@ -171,31 +170,30 @@ export function HeroCinematic() {
 
       {/* Fixed overlay */}
       <motion.div
-        className="fixed inset-0 w-full h-screen overflow-hidden pointer-events-none"
+        className="fixed inset-0 w-full h-screen overflow-hidden pointer-events-none will-change-transform"
         style={{ opacity: inSection, zIndex: 5 }}
       >
-        {/* Animated background */}
-        <motion.div className="absolute inset-0 z-0" style={{ backgroundColor: bg }} />
+        {/* Black base background (always present) */}
+        <div className="absolute inset-0 z-0 bg-black" />
+        {/* Light overlay — fades in via GPU-composited opacity */}
+        <motion.div
+          className="absolute inset-0 z-0 will-change-[opacity]"
+          style={{
+            opacity: bgLightOpacity,
+            background: "linear-gradient(180deg, #e5e5e5 0%, #fafaf9 100%)",
+          }}
+        />
 
         {/* Content stage */}
         <div className="relative h-full w-full overflow-hidden pointer-events-auto">
 
-          {/* ── Background noise texture ── */}
-          <div
-            className="absolute inset-0 z-0 pointer-events-none opacity-[0.04]"
-            style={{
-              backgroundImage:
-                "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
-            }}
-          />
-
-          {/* Aurora blobs */}
+          {/* Aurora blobs — reduced blur radii for GPU perf */}
           <motion.div
-            className="absolute top-[15%] left-[20%] w-[40vw] h-[40vw] max-w-[500px] max-h-[500px] rounded-full bg-teal-500/10 blur-[120px] pointer-events-none z-0"
+            className="absolute top-[15%] left-[20%] w-[40vw] h-[40vw] max-w-[500px] max-h-[500px] rounded-full bg-teal-500/10 blur-[80px] pointer-events-none z-0 transform-gpu"
             style={{ opacity: blobOpacity }}
           />
           <motion.div
-            className="absolute bottom-[20%] right-[15%] w-[35vw] h-[35vw] max-w-[420px] max-h-[420px] rounded-full bg-lime-500/8 blur-[100px] pointer-events-none z-0"
+            className="absolute bottom-[20%] right-[15%] w-[35vw] h-[35vw] max-w-[420px] max-h-[420px] rounded-full bg-lime-500/8 blur-[60px] pointer-events-none z-0 transform-gpu"
             style={{ opacity: blobOpacity }}
           />
 
@@ -216,13 +214,13 @@ export function HeroCinematic() {
             className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-40"
           >
             <motion.h1
-              className="absolute text-[14vw] md:text-[12vw] leading-none font-bold tracking-tighter text-white drop-shadow-2xl"
+              className="absolute text-[14vw] md:text-[12vw] leading-none font-bold tracking-tighter text-white transform-gpu"
               style={{ y: overlayLine1Y, opacity: overlayLine1Opacity }}
             >
               All in one
             </motion.h1>
             <motion.h1
-              className="absolute text-[16vw] md:text-[14vw] leading-none font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-zinc-200 drop-shadow-2xl mt-[12vw]"
+              className="absolute text-[16vw] md:text-[14vw] leading-none font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-zinc-200 mt-[12vw] transform-gpu"
               style={{ y: overlayLine2Y, opacity: overlayLine2Opacity }}
             >
               solution

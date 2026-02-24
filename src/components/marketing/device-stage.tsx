@@ -173,9 +173,10 @@ export const DeviceStage = memo(function DeviceStage({ progress, isMobile }: Dev
     const el = screenAreaRef.current;
     if (!el) return;
     const ro = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect;
-      const scale = Math.min(width / DASHBOARD_W, height / DASHBOARD_H);
-      el.style.setProperty('--dash-scale', String(scale));
+      const { width } = entry.contentRect;
+      // Scale by width only — the laptop shell AR already matches the dashboard's
+      // 16:10 ratio, so width-filling guarantees edge-to-edge content.
+      el.style.setProperty('--dash-scale', String(width / DASHBOARD_W));
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -183,15 +184,16 @@ export const DeviceStage = memo(function DeviceStage({ progress, isMobile }: Dev
 
   // ─── Phone CSS vars ───────────────────────────────
   const phoneWidth = isMobile ? "min(300px, 80vw)" : "min(340px, 40vw)";
-  // Desktop: stretch to fill. Mobile: use fixed 16/10 AR scaled to fit viewport.
-  // The desktop dashboard is ~16:10 AR — preserve this exactly on mobile.
-  const DESKTOP_LAPTOP_AR = 16 / 10;
-  const laptopWidth = isMobile ? "85vw" : "85vw";
-  const laptopHeight = isMobile ? `calc(85vw / ${DESKTOP_LAPTOP_AR})` : "80vh";
-
   // Dashboard intrinsic dimensions (match Screen5WebDashboard design)
   const DASHBOARD_W = 1280;
   const DASHBOARD_H = 800;
+  // Laptop dimensions — always derive height from width using the dashboard's
+  // intrinsic 16:10 aspect ratio so the content fills with zero black bars.
+  const LAPTOP_AR = DASHBOARD_W / DASHBOARD_H; // 1.6
+  const laptopWidth = isMobile ? "85vw" : "min(85vw, 1200px)";
+  const laptopHeight = isMobile
+    ? `calc(85vw / ${LAPTOP_AR})`
+    : `calc(min(85vw, 1200px) / ${LAPTOP_AR})`;
 
   return (
     <div className="absolute inset-0 z-30 pointer-events-none">
@@ -231,7 +233,7 @@ export const DeviceStage = memo(function DeviceStage({ progress, isMobile }: Dev
 
               {/* ─── Shell A: Phone (rounded corners, dynamic island) ─── */}
               <motion.div
-                className="absolute inset-0 overflow-hidden"
+                className="absolute inset-0 overflow-hidden transform-gpu"
                 style={{
                   opacity: phoneShellOpacity,
                   borderRadius: "calc(52px + (18px - 52px) * var(--morph-p))",
@@ -254,7 +256,7 @@ export const DeviceStage = memo(function DeviceStage({ progress, isMobile }: Dev
 
               {/* ─── Shell B: Laptop (smaller corners) ─── */}
               <motion.div
-                className="absolute inset-0 overflow-hidden"
+                className="absolute inset-0 overflow-hidden transform-gpu"
                 style={{
                   opacity: laptopShellOpacity,
                   borderRadius: "calc(52px + (18px - 52px) * var(--morph-p))",
@@ -321,17 +323,16 @@ export const DeviceStage = memo(function DeviceStage({ progress, isMobile }: Dev
                   style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)" }}
                 />
 
-                {/* Mobile screen content */}
-                <motion.div className="absolute inset-0 z-[10]" style={{ opacity: s1 }}>
+                <motion.div className="absolute inset-0 z-[10] will-change-[opacity]" style={{ opacity: s1 }}>
                   <Screen1Suggestions />
                 </motion.div>
-                <motion.div className="absolute inset-0 z-[10]" style={{ opacity: s2 }}>
+                <motion.div className="absolute inset-0 z-[10] will-change-[opacity]" style={{ opacity: s2 }}>
                   <Screen2Voice />
                 </motion.div>
-                <motion.div className="absolute inset-0 z-[10]" style={{ opacity: s3 }}>
+                <motion.div className="absolute inset-0 z-[10] will-change-[opacity]" style={{ opacity: s3 }}>
                   <Screen3Fulfillment />
                 </motion.div>
-                <motion.div className="absolute inset-0 z-[10]" style={{ opacity: s4 }}>
+                <motion.div className="absolute inset-0 z-[10] will-change-[opacity]" style={{ opacity: s4 }}>
                   <Screen4Sales />
                 </motion.div>
 
@@ -469,9 +470,9 @@ const MobileCalloutOverlay = memo(function MobileCalloutOverlay({
         <div
           className="absolute inset-0 rounded-3xl pointer-events-none"
           style={{
-            background: "rgba(0, 0, 0, 0.65)",
-            backdropFilter: "blur(24px) saturate(1.4)",
-            WebkitBackdropFilter: "blur(24px) saturate(1.4)",
+            background: "rgba(0, 0, 0, 0.7)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
             border: "1px solid rgba(255,255,255,0.08)",
             boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
           }}
