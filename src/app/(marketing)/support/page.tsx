@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Mail, MessageCircle, BookOpen, ArrowRight, Clock } from "lucide-react";
 import { MarketingPageShell } from "@/components/marketing/marketing-page-shell";
 import { PageHero } from "@/components/marketing/page-hero";
+import { APPSTORE_COMPLIANCE_LINKS } from "@/config/external-links";
 
 export const metadata: Metadata = {
   title: "Support | Babytuna Systems",
@@ -159,7 +160,7 @@ export default function SupportPage() {
 
           <div className="mt-12 grid sm:grid-cols-2 gap-4">
             <Link
-              href="/contact"
+              href={APPSTORE_COMPLIANCE_LINKS.contact}
               className="bg-white rounded-xl border border-black/5 p-5 shadow-sm flex items-center gap-3 hover:bg-zinc-50 transition-colors group"
             >
               <MessageCircle className="h-5 w-5 text-zinc-400 group-hover:text-teal-600 transition-colors shrink-0" />

@@ -1,3 +1,5 @@
+import { APPSTORE_COMPLIANCE_LINKS } from "@/config/external-links";
+
 export interface NavLink {
   label: string;
   href: string;
@@ -28,15 +30,15 @@ export const footerSections: FooterSection[] = [
     title: "Company",
     links: [
       { label: "About Us", href: "/about" },
-      { label: "Support", href: "/support" },
+      { label: "Support", href: APPSTORE_COMPLIANCE_LINKS.support },
       { label: "Blog", href: "/blog" },
-      { label: "Contact", href: "/contact" },
+      { label: "Contact", href: APPSTORE_COMPLIANCE_LINKS.contact },
     ],
   },
   {
     title: "Legal",
     links: [
-      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Privacy Policy", href: APPSTORE_COMPLIANCE_LINKS.privacy },
       { label: "Terms of Service", href: "/terms" },
       { label: "Security", href: "/security" },
     ],

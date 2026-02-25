@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Shield, Lock, Users, Eye, AlertTriangle } from "lucide-react";
 import { MarketingPageShell } from "@/components/marketing/marketing-page-shell";
 import { PageHero } from "@/components/marketing/page-hero";
+import { APPSTORE_COMPLIANCE_LINKS } from "@/config/external-links";
 
 export const metadata: Metadata = {
   title: "Security | Babytuna Systems",
@@ -119,7 +120,7 @@ export default function SecurityPage() {
             <p className="text-sm text-zinc-500">
               See also:{" "}
               <Link
-                href="/privacy"
+                href={APPSTORE_COMPLIANCE_LINKS.privacy}
                 className="text-teal-600 hover:text-teal-500 transition-colors"
               >
                 Privacy Policy

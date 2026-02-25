@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
+import { APPSTORE_COMPLIANCE_LINKS } from "@/config/external-links";
+
 export function CTASection() {
   return (
     <section className="relative py-20 md:py-32 bg-zinc-900 overflow-hidden text-center text-white">
@@ -35,7 +37,7 @@ export function CTASection() {
               <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
             </Link>
             <Link
-              href="/contact"
+              href={APPSTORE_COMPLIANCE_LINKS.contact}
               className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 hover:bg-white/10 px-8 py-3 md:px-8 md:py-4 text-sm md:text-lg font-medium text-white transition-all"
             >
               Book a Demo

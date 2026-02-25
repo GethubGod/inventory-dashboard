@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Mail, MessageCircle, ArrowRight } from "lucide-react";
 import { MarketingPageShell } from "@/components/marketing/marketing-page-shell";
 import { PageHero } from "@/components/marketing/page-hero";
+import { APPSTORE_COMPLIANCE_LINKS } from "@/config/external-links";
 
 export const metadata: Metadata = {
   title: "Contact | Babytuna Systems",
@@ -41,7 +42,7 @@ export default function ContactPage() {
               </a>
               <div className="mt-4 pt-4 border-t border-black/5">
                 <Link
-                  href="/support"
+                  href={APPSTORE_COMPLIANCE_LINKS.support}
                   className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-1"
                 >
                   Visit Support Center

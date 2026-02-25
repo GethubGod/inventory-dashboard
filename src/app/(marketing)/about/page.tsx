@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { MarketingPageShell } from "@/components/marketing/marketing-page-shell";
 import { PageHero } from "@/components/marketing/page-hero";
 
 export const metadata: Metadata = {
   title: "About Us | Babytuna Systems",
   description:
-    "Built by restaurant owners for restaurant operations. Our mission is to reduce inventory waste and ordering friction.",
+    "Born from the kitchens of Babytuna Sushi and Babytuna Poki & Pho. We built the inventory system we wished existed, then opened it up for every restaurant.",
 };
 
 const principles = [
@@ -17,12 +19,7 @@ const principles = [
   {
     title: "Clarity over cleverness",
     description:
-      "The system should be obvious. No training manuals, no onboarding calls. Open and go.",
-  },
-  {
-    title: "Automation that earns trust",
-    description:
-      "We automate repetitive tasks but always give you the final say. Review before it ships.",
+      "The system should be obvious. No training manuals, no onboarding calls. Open it and go.",
   },
   {
     title: "Built in the kitchen",
@@ -30,9 +27,14 @@ const principles = [
       "Every feature comes from real operational pain. We test in restaurants, not labs.",
   },
   {
+    title: "Automation that earns trust",
+    description:
+      "We automate the repetitive stuff but always give you the final say. You review before it ships.",
+  },
+  {
     title: "Honest by default",
     description:
-      "Transparent pricing. No hidden fees. No dark patterns. We sell a product, not a trap.",
+      "Transparent pricing, no hidden fees, no dark patterns. We sell a product, not a trap.",
   },
 ];
 
@@ -42,27 +44,22 @@ export default function AboutPage() {
       <PageHero
         title={
           <>
-            Built by restaurant owners,
+            Built by a restaurant owner,
             <br />
-            <span className="text-zinc-500">for restaurant operations.</span>
+            <span className="text-zinc-500">for every restaurant.</span>
           </>
         }
-        subtitle="We've been in the trenches — so we know the problems restaurants face better than anyone."
+        subtitle="We didn't set out to build a software company. We set out to fix ordering at our own restaurants."
       />
 
       <section className="bg-[#fafaf9] text-zinc-900 py-16 md:py-24">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="prose-zinc max-w-none">
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-6">
-              The story
-            </h2>
-            <p className="text-zinc-600 text-base md:text-lg leading-relaxed">
-              Babytuna Systems was born out of restaurant kitchens — not a
-              startup accelerator. We ran restaurants and spent more time
-              managing spreadsheets, texting suppliers, and guessing par levels
-              than actually cooking.
-            </p>
-          </div>
+          <p className="text-zinc-600 text-base md:text-lg leading-relaxed">
+            Babytuna Systems was built to solve real inventory and ordering
+            problems we faced running our own restaurants &mdash; then we
+            opened it up for every restaurant that deals with the same
+            challenges.
+          </p>
         </div>
       </section>
 
@@ -72,9 +69,9 @@ export default function AboutPage() {
             Our mission
           </h2>
           <p className="text-zinc-600 text-base md:text-lg leading-relaxed mb-12 md:mb-16">
-            Reduce inventory waste and ordering friction for every restaurant,
-            starting with the ones that need it most — small, independent
-            operators.
+            Eliminate inventory waste and ordering friction for every
+            restaurant &mdash; starting with the small, independent operators
+            who need it most and have the fewest tools built for them.
           </p>
 
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-8">
@@ -97,6 +94,25 @@ export default function AboutPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="bg-zinc-900 text-white py-20 md:py-32 text-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(20,184,166,0.15),transparent_70%)] pointer-events-none" />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 md:mb-6">
+            Try it for yourself.
+          </h2>
+          <p className="text-zinc-400 text-base md:text-lg mb-8 max-w-lg mx-auto">
+            Free during early access. Set up your restaurant in minutes.
+          </p>
+          <Link
+            href="/signup"
+            className="inline-flex items-center gap-2 rounded-full bg-lime-500 hover:bg-lime-400 px-8 py-3 md:py-4 text-sm md:text-lg font-semibold text-black transition-all shadow-[0_0_30px_rgba(132,204,22,0.3)] hover:shadow-[0_0_40px_rgba(132,204,22,0.5)]"
+          >
+            Get Started Free
+            <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
+          </Link>
         </div>
       </section>
     </MarketingPageShell>
