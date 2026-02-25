@@ -51,12 +51,12 @@ export default function PrivacyPage() {
 
           <div className="space-y-10 md:space-y-14">
             <p className="text-zinc-600 text-base leading-relaxed">
-              Babytuna Systems Inc. (&quot;Babytuna,&quot; &quot;we,&quot;
+              Babytuna Systems (&quot;Babytuna,&quot; &quot;we,&quot;
               &quot;us,&quot; or &quot;our&quot;) operates the Babytuna Systems
               platform, including the web application at babytunasystems.com and
-              the Babytuna iOS app. This Privacy Policy explains how we collect,
-              use, disclose, and safeguard your information when you use our
-              services.
+              the Babytuna Systems iOS app. This Privacy Policy explains how we
+              collect, use, disclose, and safeguard your information when you
+              use our services.
             </p>
 
             <div id="information-we-collect">
@@ -109,6 +109,13 @@ export default function PrivacyPage() {
                   for all data transmission between your device and our servers.
                 </p>
                 <p>
+                  We retain your personal information for as long as your
+                  account is active or as needed to provide you the service.
+                  If you request account deletion, we will remove your data
+                  within 30 days, except where we are required to retain it
+                  for legal, accounting, or compliance purposes.
+                </p>
+                <p>
                   While we implement commercially reasonable security measures,
                   no method of electronic transmission or storage is 100%
                   secure. We cannot guarantee absolute security.
@@ -123,9 +130,9 @@ export default function PrivacyPage() {
               <div className="space-y-4 text-zinc-600 text-sm md:text-base leading-relaxed">
                 <p>
                   We may use third-party services for authentication (Supabase
-                  Auth), analytics, payment processing, and POS integrations.
-                  These services have their own privacy policies and we
-                  encourage you to review them.
+                  Auth), analytics, and system integrations. These services
+                  have their own privacy policies and we encourage you to
+                  review them.
                 </p>
                 <p>
                   We do not sell your personal information to third parties.
@@ -145,6 +152,22 @@ export default function PrivacyPage() {
                   below.
                 </p>
                 <p>
+                  <strong className="text-zinc-900">California residents (CCPA).</strong>{" "}
+                  If you are a California resident, you have the right to know
+                  what personal information we collect, request its deletion,
+                  and opt out of the sale of your personal information. We do
+                  not sell personal information. To submit a request, email us
+                  at{" "}
+                  <a
+                    href="mailto:babytunalovessushi@gmail.com"
+                    className="text-teal-600 hover:text-teal-500 transition-colors"
+                  >
+                    babytunalovessushi@gmail.com
+                  </a>
+                  .
+                </p>
+                <p>
+                  <strong className="text-zinc-900">EEA residents (GDPR).</strong>{" "}
                   If you are located in the European Economic Area, you may
                   have additional rights under GDPR, including the right to data
                   portability and the right to lodge a complaint with a

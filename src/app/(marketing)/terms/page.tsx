@@ -14,10 +14,11 @@ const sections = [
   { id: "description", title: "Description of Service" },
   { id: "accounts", title: "Accounts & Access" },
   { id: "acceptable-use", title: "Acceptable Use" },
-  { id: "subscriptions", title: "Subscriptions & Billing" },
+  { id: "fees", title: "Fees & Future Plans" },
   { id: "intellectual-property", title: "Intellectual Property" },
   { id: "limitation", title: "Limitation of Liability" },
   { id: "termination", title: "Termination" },
+  { id: "apple-eula", title: "Apple Licensed Application Terms" },
   { id: "governing-law", title: "Governing Law" },
   { id: "changes", title: "Changes to Terms" },
   { id: "contact", title: "Contact" },
@@ -58,10 +59,10 @@ export default function TermsPage() {
             <p className="text-zinc-600 text-base leading-relaxed">
               These Terms of Service (&quot;Terms&quot;) govern your use of the
               Babytuna Systems platform, including the web application at
-              babytunasystems.com and the Babytuna iOS app, operated by Babytuna
-              Systems Inc. (&quot;Babytuna,&quot; &quot;we,&quot; &quot;us,&quot;
-              or &quot;our&quot;). By accessing or using the service, you agree
-              to be bound by these Terms.
+              babytunasystems.com and the Babytuna Systems iOS app, operated by
+              Babytuna Systems (&quot;Babytuna,&quot; &quot;we,&quot;
+              &quot;us,&quot; or &quot;our&quot;). By accessing or using the
+              service, you agree to be bound by these Terms.
             </p>
 
             <div id="acceptance">
@@ -82,10 +83,10 @@ export default function TermsPage() {
               </h2>
               <p className="text-zinc-600 text-sm md:text-base leading-relaxed">
                 Babytuna Systems provides an inventory management and ordering
-                platform for restaurants, including voice-based ordering,
-                inventory tracking, supplier routing, demand forecasting, and
-                related features. The specific features available to you may
-                depend on your subscription plan.
+                platform for restaurants, including category browsing, quick
+                search, cart-based ordering, inventory tracking, supplier
+                routing, and related features. Additional features such as
+                voice-based ordering may be introduced over time.
               </p>
             </div>
 
@@ -124,25 +125,23 @@ export default function TermsPage() {
               </ul>
             </div>
 
-            <div id="subscriptions">
+            <div id="fees">
               <h2 className="text-xl md:text-2xl font-bold mb-4">
-                5. Subscriptions &amp; Billing
+                5. Fees &amp; Future Plans
               </h2>
               <div className="space-y-4 text-zinc-600 text-sm md:text-base leading-relaxed">
                 <p>
-                  Babytuna offers a free Starter plan and a paid Pro plan.
-                  The Pro plan is billed monthly. You may upgrade or downgrade
-                  at any time.
+                  Babytuna Systems is currently offered free of charge. There
+                  are no fees to download the app, create an organization, add
+                  team members, or use any features. No in-app purchases are
+                  required.
                 </p>
                 <p>
-                  You may cancel your Pro subscription at any time. Upon
-                  cancellation, you will retain access to Pro features through
-                  the end of your current billing period.
-                </p>
-                <p>
-                  We reserve the right to change pricing with 30 days&apos;
-                  notice. Price changes will not apply to your current billing
-                  period.
+                  We may introduce optional paid plans or premium features in
+                  the future. If we do, we will provide at least 30 days&apos;
+                  advance notice, and existing free functionality will not be
+                  removed. Any paid plans will be clearly communicated before
+                  you are charged.
                 </p>
               </div>
             </div>
@@ -154,7 +153,7 @@ export default function TermsPage() {
               <div className="space-y-4 text-zinc-600 text-sm md:text-base leading-relaxed">
                 <p>
                   The service, including its design, code, features, and
-                  branding, is owned by Babytuna Systems Inc. and protected by
+                  branding, is owned by Babytuna Systems and protected by
                   copyright and other intellectual property laws.
                 </p>
                 <p>
@@ -186,24 +185,87 @@ export default function TermsPage() {
                 We may suspend or terminate your access to the service if you
                 violate these Terms or for any other reason with reasonable
                 notice. You may delete your account at any time by contacting
-                support.
+                support at{" "}
+                <a
+                  href="mailto:babytunalovessushi@gmail.com"
+                  className="text-teal-600 hover:text-teal-500 transition-colors"
+                >
+                  babytunalovessushi@gmail.com
+                </a>
+                .
               </p>
+            </div>
+
+            <div id="apple-eula">
+              <h2 className="text-xl md:text-2xl font-bold mb-4">
+                9. Apple Licensed Application Terms
+              </h2>
+              <div className="space-y-4 text-zinc-600 text-sm md:text-base leading-relaxed">
+                <p>
+                  If you access Babytuna Systems through the iOS app downloaded
+                  from the Apple App Store, the following additional terms apply:
+                </p>
+                <ul className="space-y-2 list-disc pl-5">
+                  <li>
+                    These Terms are between you and Babytuna Systems only, not
+                    with Apple Inc. Babytuna Systems, not Apple, is solely
+                    responsible for the app and its content.
+                  </li>
+                  <li>
+                    Your use of the app is also subject to the Usage Rules
+                    established in the{" "}
+                    <a
+                      href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-teal-600 hover:text-teal-500 transition-colors"
+                    >
+                      Apple Licensed Application End User License Agreement
+                    </a>
+                    .
+                  </li>
+                  <li>
+                    Apple has no obligation to provide any maintenance or support
+                    services for the app. Babytuna Systems is responsible for all
+                    support inquiries.
+                  </li>
+                  <li>
+                    In the event of any failure of the app to conform to any
+                    applicable warranty, you may notify Apple for a refund of the
+                    purchase price (if any). Apple has no other warranty
+                    obligation with respect to the app.
+                  </li>
+                  <li>
+                    Apple is not responsible for any claims relating to the app,
+                    including product liability, regulatory compliance, or
+                    intellectual property infringement.
+                  </li>
+                  <li>
+                    Apple and its subsidiaries are third-party beneficiaries of
+                    these Terms. Upon your acceptance, Apple will have the right
+                    to enforce these Terms against you as a third-party
+                    beneficiary.
+                  </li>
+                </ul>
+              </div>
             </div>
 
             <div id="governing-law">
               <h2 className="text-xl md:text-2xl font-bold mb-4">
-                9. Governing Law
+                10. Governing Law
               </h2>
               <p className="text-zinc-600 text-sm md:text-base leading-relaxed">
-                These Terms are governed by the laws of the United States. Any
-                disputes will be resolved in the courts of the state in which
-                Babytuna Systems Inc. is incorporated.
+                These Terms are governed by and construed in accordance with the
+                laws of the State of California, without regard to its conflict
+                of law provisions. Any disputes arising under these Terms shall
+                be subject to the exclusive jurisdiction of the state and
+                federal courts located in California.
               </p>
             </div>
 
             <div id="changes">
               <h2 className="text-xl md:text-2xl font-bold mb-4">
-                10. Changes to Terms
+                11. Changes to Terms
               </h2>
               <p className="text-zinc-600 text-sm md:text-base leading-relaxed">
                 We may modify these Terms at any time. Material changes will be
@@ -215,7 +277,7 @@ export default function TermsPage() {
 
             <div id="contact">
               <h2 className="text-xl md:text-2xl font-bold mb-4">
-                11. Contact
+                12. Contact
               </h2>
               <p className="text-zinc-600 text-sm md:text-base leading-relaxed">
                 For questions about these Terms, contact us at{" "}

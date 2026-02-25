@@ -45,7 +45,7 @@ export function Footer() {
 
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm">
-            &copy; {new Date().getFullYear()} Babytuna Systems Inc. All rights
+            &copy; {new Date().getFullYear()} Babytuna Systems. All rights
             reserved.
           </p>
           <div className="flex gap-4">

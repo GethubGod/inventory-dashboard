@@ -7,7 +7,7 @@ import { PageHero } from "@/components/marketing/page-hero";
 export const metadata: Metadata = {
   title: "Pricing | Babytuna Systems",
   description:
-    "Simple, transparent pricing. Start free with basic voice ordering, or upgrade to Pro for higher limits and advanced features.",
+    "Babytuna Systems is free during early access. Get full Pro features at no cost while we grow.",
 };
 
 const plans = [
@@ -15,12 +15,13 @@ const plans = [
     name: "Starter",
     price: "$0",
     period: "/ month",
-    description: "Basic voice ordering cap. Perfect for getting started.",
+    description: "Everything you need to start ordering smarter.",
+    badge: null,
     features: [
-      "Limited voice conversations",
+      "Unlimited inventory ordering",
+      "Browse & quick search",
       "Basic supplier routing",
       "Single location",
-      "Multi-location support",
       "Access to mobile app",
     ],
     cta: "Start Free",
@@ -29,18 +30,20 @@ const plans = [
   },
   {
     name: "Pro",
-    price: "$10",
+    price: "$0",
     period: "/ month",
-    description: "Higher voice capacity and advanced intelligence.",
+    description: "Advanced features for growing operations.",
+    badge: "Free During Early Access",
     features: [
       "Everything in Starter",
-      "Higher voice limit",
+      "Multi-location support",
+      "Voice ordering (coming soon)",
       "Advanced demand forecasting",
       "POS integrations (Square, Toast)",
       "Real-time cost tracking",
       "Priority support",
     ],
-    cta: "Upgrade to Pro",
+    cta: "Get Pro Free",
     ctaHref: "/signup",
     highlight: true,
   },
@@ -48,24 +51,29 @@ const plans = [
 
 const faqs = [
   {
-    question: "What counts as a voice request?",
+    question: "Is everything really free right now?",
     answer:
-      "A voice request is a single conversation with Tuna Specialist where you dictate items to order. Each conversation — regardless of how many items you mention — counts as one request.",
+      "Yes. During early access, all features \u2014 including Pro \u2014 are completely free. No credit card required, no hidden fees, no trial period.",
   },
   {
-    question: "Can I upgrade later?",
+    question: "Will Pro cost money in the future?",
     answer:
-      "Absolutely. You can upgrade from Starter to Pro at any time from your account settings. Your data and configuration carry over seamlessly.",
-  },
-  {
-    question: "Is there a contract?",
-    answer:
-      "No contracts. Pro is billed monthly and you can cancel anytime. When you cancel, you keep access through the end of your billing period.",
+      "We plan to introduce paid Pro pricing down the road. When we do, we\u2019ll give at least 30 days\u2019 notice. Early access users will be the first to know, and we\u2019ll offer loyalty pricing for those who signed up early.",
   },
   {
     question: "Do I need a credit card to start?",
     answer:
-      "No. The Starter plan is completely free — no credit card required. You only need payment info if you choose to upgrade to Pro.",
+      "No. Everything is free right now. You won\u2019t be asked for payment information at any point during early access.",
+  },
+  {
+    question: "What happens to my data if pricing changes?",
+    answer:
+      "Your data is always yours. If you choose not to upgrade when paid plans launch, you\u2019ll keep access to Starter features and all your existing data.",
+  },
+  {
+    question: "How many locations can I add?",
+    answer:
+      "During early access, Pro is free so you can set up multiple locations at no cost. The Starter plan supports a single location.",
   },
 ];
 
@@ -75,12 +83,12 @@ export default function PricingPage() {
       <PageHero
         title={
           <>
-            Simple pricing for
+            Free during
             <br />
-            <span className="text-zinc-500">serious operations.</span>
+            <span className="text-zinc-500">early access.</span>
           </>
         }
-        subtitle="Start for free. Upgrade when you need more power. Cancel anytime."
+        subtitle="Get full Pro features at no cost while we grow. No credit card required."
       />
 
       <section className="bg-[#fafaf9] text-zinc-900 py-16 md:py-24">
@@ -93,9 +101,9 @@ export default function PricingPage() {
                   plan.highlight ? "border-teal-500/30" : "border-black/5"
                 }`}
               >
-                {plan.highlight && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-linear-to-r from-teal-500 to-lime-500 px-3 py-0.5 md:px-4 md:py-1 text-[10px] md:text-xs font-bold uppercase tracking-wider text-white shadow-sm">
-                    Recommended
+                {plan.badge && (
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-linear-to-r from-teal-500 to-lime-500 px-3 py-0.5 md:px-4 md:py-1 text-[10px] md:text-xs font-bold uppercase tracking-wider text-white shadow-sm whitespace-nowrap">
+                    {plan.badge}
                   </div>
                 )}
 
@@ -185,7 +193,7 @@ export default function PricingPage() {
             Start running smarter today.
           </h2>
           <p className="text-zinc-400 text-base md:text-lg mb-8 max-w-lg mx-auto">
-            Free to start. No credit card required.
+            Everything is free during early access. No credit card needed.
           </p>
           <Link
             href="/signup"

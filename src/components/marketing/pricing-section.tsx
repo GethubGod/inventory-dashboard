@@ -4,17 +4,17 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { transitionVariations } from "@/lib/motion";
 
-// Pricing data — condensed feature lists for mobile
 const plans = [
   {
     name: "Starter",
     price: "$0",
-    description: "Basic voice ordering cap.",
+    description: "Everything you need to start ordering smarter.",
+    badge: null,
     features: [
-      "Limited voice conversations",
+      "Unlimited inventory ordering",
+      "Browse & quick search",
       "Basic supplier routing",
       "Single location",
-      "Multi-location support",
       "Access to mobile app",
     ],
     cta: "Start Free",
@@ -22,17 +22,19 @@ const plans = [
   },
   {
     name: "Pro",
-    price: "$10",
-    description: "Higher voice capacity and advanced intelligence.",
+    price: "$0",
+    description: "Advanced features for growing operations.",
+    badge: "Free During Early Access",
     features: [
-      "Everything in Starter Plan",
-      "Higher voice limit",
+      "Everything in Starter",
+      "Multi-location support",
+      "Voice ordering (coming soon)",
       "Advanced demand forecasting",
       "POS integrations (Square, Toast)",
       "Real-time cost tracking",
       "Priority support",
     ],
-    cta: "Upgrade to Pro",
+    cta: "Get Pro Free",
     highlight: true,
   },
 ];
@@ -40,7 +42,6 @@ const plans = [
 export function PricingSection() {
   return (
     <section id="pricing" className="py-14 md:py-32 bg-[#fafaf9] text-zinc-900 border-t border-black/5 relative overflow-hidden">
-      {/* Background radial glow */}
       <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-teal-500/5 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -51,10 +52,10 @@ export function PricingSection() {
           className="text-center max-w-3xl mx-auto mb-8 md:mb-16"
         >
           <motion.h2 variants={transitionVariations.fadeUp} className="text-2xl md:text-5xl font-bold tracking-tight mb-3 md:mb-6">
-            Simple pricing for serious operations.
+            Free during early access.
           </motion.h2>
           <motion.p variants={transitionVariations.fadeUp} className="text-sm md:text-lg text-zinc-600">
-            Start for free. Upgrade when you need more power. Cancel anytime.
+            Get full Pro features at no cost while we grow. No credit card required.
           </motion.p>
         </motion.div>
 
@@ -70,26 +71,23 @@ export function PricingSection() {
                 plan.highlight ? "border-teal-500/30" : "border-black/5"
               }`}
             >
-              {plan.highlight && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-r from-teal-500 to-lime-500 px-3 py-0.5 md:px-4 md:py-1 text-[10px] md:text-xs font-bold uppercase tracking-wider text-white shadow-sm">
-                  Recommended
+              {plan.badge && (
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-linear-to-r from-teal-500 to-lime-500 px-3 py-0.5 md:px-4 md:py-1 text-[10px] md:text-xs font-bold uppercase tracking-wider text-white shadow-sm whitespace-nowrap">
+                  {plan.badge}
                 </div>
               )}
 
-              {/* Header row: plan name + price side-by-side on mobile */}
               <div className="flex items-baseline justify-between mb-3 md:mb-0">
                 <div className="md:mb-8">
                   <h3 className="text-lg md:text-2xl font-bold mb-0.5 md:mb-2">{plan.name} Plan</h3>
                   <p className="text-zinc-500 text-xs md:text-base md:h-12">{plan.description}</p>
                 </div>
-                {/* Price visible inline on mobile */}
                 <div className="flex items-baseline md:hidden shrink-0 ml-4">
                   <span className="text-3xl font-black tracking-tight">{plan.price}</span>
                   <span className="text-zinc-500 text-xs font-medium ml-1">/ mo</span>
                 </div>
               </div>
 
-              {/* Desktop price block */}
               <div className="hidden md:block mb-8 border-b border-black/5 pb-8">
                 <div className="flex items-baseline">
                   <span className="text-5xl font-black tracking-tight">{plan.price}</span>
@@ -97,7 +95,6 @@ export function PricingSection() {
                 </div>
               </div>
 
-              {/* Mobile: thin divider */}
               <div className="md:hidden h-px bg-black/5 mb-3" />
 
               <div className="flex-1 space-y-2 md:space-y-4 mb-4 md:mb-8">
