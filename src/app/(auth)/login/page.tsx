@@ -8,10 +8,6 @@ import { z } from "zod";
 import { toast } from "sonner";
 
 import { useSupabase } from "@/components/providers/supabase-provider";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email address."),
@@ -48,42 +44,93 @@ export default function LoginPage() {
     }
 
     toast.success("Welcome back.");
-    router.push("/dashboard/overview");
+    const {
+      data: { user: signedInUser },
+    } = await supabase.auth.getUser();
+
+    if (!signedInUser) {
+      router.push("/dashboard/overview");
+      router.refresh();
+      return;
+    }
+
+    const { data: membership } = await supabase
+      .from("org_memberships")
+      .select("id")
+      .eq("user_id", signedInUser.id)
+      .not("accepted_at", "is", null)
+      .maybeSingle();
+
+    router.push(membership ? "/dashboard/overview" : "/onboarding");
     router.refresh();
   });
 
   return (
-    <Card className="border-border bg-card">
-      <CardHeader>
-        <CardTitle className="text-foreground">Log in</CardTitle>
-        <CardDescription>Use your Babytuna account to access the dashboard.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form className="space-y-4" onSubmit={onSubmit}>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" autoComplete="email" placeholder="chef@restaurant.com" {...register("email")} />
-            {errors.email ? <p className="text-sm text-red-600">{errors.email.message}</p> : null}
-          </div>
+    <div className="w-full max-w-md rounded-2xl border border-white/10 bg-zinc-950 px-8 py-12 shadow-2xl sm:px-12">
+      <h1 className="mb-8 text-2xl font-bold tracking-tight text-white">
+        Log in
+      </h1>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" autoComplete="current-password" {...register("password")} />
-            {errors.password ? <p className="text-sm text-red-600">{errors.password.message}</p> : null}
-          </div>
+      <form className="space-y-5" onSubmit={onSubmit}>
+        {/* Email */}
+        <div className="space-y-1.5">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-zinc-300"
+          >
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="chef@restaurant.com"
+            {...register("email")}
+            className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition-colors focus:border-lime-500/60 focus:ring-1 focus:ring-lime-500/30"
+          />
+          {errors.email && (
+            <p className="text-xs text-red-400">{errors.email.message}</p>
+          )}
+        </div>
 
-          <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isSubmitting}>
-            {isSubmitting ? "Signing in..." : "Sign in"}
-          </Button>
+        {/* Password */}
+        <div className="space-y-1.5">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-zinc-300"
+          >
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            {...register("password")}
+            className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition-colors focus:border-lime-500/60 focus:ring-1 focus:ring-lime-500/30"
+          />
+          {errors.password && (
+            <p className="text-xs text-red-400">{errors.password.message}</p>
+          )}
+        </div>
 
-          <p className="text-center text-sm text-muted-foreground">
-            New to Babytuna?{" "}
-            <Link className="font-medium text-foreground hover:underline" href="/signup">
-              Create an account
-            </Link>
-          </p>
-        </form>
-      </CardContent>
-    </Card>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full rounded-lg bg-lime-500 py-2.5 text-sm font-semibold text-black transition-all hover:bg-lime-400 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? "Signing in…" : "Sign in"}
+        </button>
+
+        <p className="text-center text-sm text-zinc-500">
+          New to Babytuna?{" "}
+          <Link
+            href="/signup"
+            className="font-medium text-lime-400 transition-colors hover:text-lime-300"
+          >
+            Create an account
+          </Link>
+        </p>
+      </form>
+    </div>
   );
 }

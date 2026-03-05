@@ -8,29 +8,24 @@ import { z } from "zod";
 import { toast } from "sonner";
 
 import { useSupabase } from "@/components/providers/supabase-provider";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
-const passwordSchema = z
-  .string()
-  .min(8, "Password must be at least 8 characters.")
-  .regex(/^(?=.*[A-Za-z])(?=.*\d).+$/, "Password must contain letters and numbers.");
+/* ─── Schema (no confirm-password) ─────────────────── */
 
-const signupSchema = z
-  .object({
-    fullName: z.string().min(2, "Full name is required."),
-    email: z.string().email("Enter a valid email address."),
-    password: passwordSchema,
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match.",
-    path: ["confirmPassword"],
-  });
+const signupSchema = z.object({
+  fullName: z.string().min(2, "Full name is required."),
+  email: z.string().email("Enter a valid email address."),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters.")
+    .regex(
+      /^(?=.*[A-Za-z])(?=.*\d).+$/,
+      "Password must contain letters and numbers."
+    ),
+});
 
 type SignupValues = z.infer<typeof signupSchema>;
+
+/* ─── Page ─────────────────────────────────────────── */
 
 export default function SignupPage() {
   const router = useRouter();
@@ -46,7 +41,6 @@ export default function SignupPage() {
       fullName: "",
       email: "",
       password: "",
-      confirmPassword: "",
     },
   });
 
@@ -55,9 +49,7 @@ export default function SignupPage() {
       email: values.email,
       password: values.password,
       options: {
-        data: {
-          full_name: values.fullName,
-        },
+        data: { full_name: values.fullName },
       },
     });
 
@@ -71,49 +63,111 @@ export default function SignupPage() {
   });
 
   return (
-    <Card className="border-border bg-card">
-      <CardHeader>
-        <CardTitle className="text-foreground">Create your account</CardTitle>
-        <CardDescription>Set up Babytuna access for your restaurant team.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form className="space-y-4" onSubmit={onSubmit}>
-          <div className="space-y-2">
-            <Label htmlFor="fullName">Full name</Label>
-            <Input id="fullName" autoComplete="name" placeholder="Jamie Patel" {...register("fullName")} />
-            {errors.fullName ? <p className="text-sm text-red-600">{errors.fullName.message}</p> : null}
+    <div className="flex w-full max-w-5xl overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-lime-500/5">
+      {/* ─── Left: Form Panel ─────────────────────────── */}
+      <div className="flex w-full flex-col justify-center bg-zinc-950 px-8 py-12 sm:px-12 lg:w-1/2">
+        <h1 className="mb-8 text-2xl font-bold tracking-tight text-white">
+          Create your account
+        </h1>
+
+        <form className="space-y-5" onSubmit={onSubmit}>
+          {/* Full name */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor="fullName"
+              className="block text-sm font-medium text-zinc-300"
+            >
+              Full name
+            </label>
+            <input
+              id="fullName"
+              autoComplete="name"
+              placeholder="Jamie Patel"
+              {...register("fullName")}
+              className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition-colors focus:border-lime-500/60 focus:ring-1 focus:ring-lime-500/30"
+            />
+            {errors.fullName && (
+              <p className="text-xs text-red-400">{errors.fullName.message}</p>
+            )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" autoComplete="email" placeholder="chef@restaurant.com" {...register("email")} />
-            {errors.email ? <p className="text-sm text-red-600">{errors.email.message}</p> : null}
+          {/* Email */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-zinc-300"
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              placeholder="chef@restaurant.com"
+              {...register("email")}
+              className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition-colors focus:border-lime-500/60 focus:ring-1 focus:ring-lime-500/30"
+            />
+            {errors.email && (
+              <p className="text-xs text-red-400">{errors.email.message}</p>
+            )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" autoComplete="new-password" {...register("password")} />
-            {errors.password ? <p className="text-sm text-red-600">{errors.password.message}</p> : null}
+          {/* Password */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-zinc-300"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              autoComplete="new-password"
+              placeholder="Min 8 characters"
+              {...register("password")}
+              className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition-colors focus:border-lime-500/60 focus:ring-1 focus:ring-lime-500/30"
+            />
+            {errors.password && (
+              <p className="text-xs text-red-400">{errors.password.message}</p>
+            )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm password</Label>
-            <Input id="confirmPassword" type="password" autoComplete="new-password" {...register("confirmPassword")} />
-            {errors.confirmPassword ? <p className="text-sm text-red-600">{errors.confirmPassword.message}</p> : null}
-          </div>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full rounded-lg bg-lime-500 py-2.5 text-sm font-semibold text-black transition-all hover:bg-lime-400 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? "Creating account…" : "Create account"}
+          </button>
 
-          <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isSubmitting}>
-            {isSubmitting ? "Creating account..." : "Create account"}
-          </Button>
-
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-zinc-500">
             Already have an account?{" "}
-            <Link className="font-medium text-foreground hover:underline" href="/login">
+            <Link
+              href="/login"
+              className="font-medium text-lime-400 transition-colors hover:text-lime-300"
+            >
               Log in
             </Link>
           </p>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* ─── Right: Motto Panel (desktop only) ──────── */}
+      <div className="relative hidden w-1/2 items-center justify-center overflow-hidden bg-zinc-900 lg:flex">
+        {/* Gradient glow backdrop */}
+        <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-lime-500/10 blur-[100px]" />
+        <div className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-teal-500/10 blur-[80px]" />
+
+        <div className="relative z-10 px-10 text-center">
+          <h2 className="text-5xl font-bold leading-tight tracking-tight text-white">
+            Inventory{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-lime-400">
+              reimagined.
+            </span>
+          </h2>
+        </div>
+      </div>
+    </div>
   );
 }

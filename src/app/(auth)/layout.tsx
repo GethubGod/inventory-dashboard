@@ -1,5 +1,11 @@
-import { redirect } from "next/navigation";
-
-export default function AuthLayout() {
-  redirect("/dashboard/overview");
+export default function AuthLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-black px-4 py-16">
+      {children}
+    </main>
+  );
 }

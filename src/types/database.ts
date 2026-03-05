@@ -32,17 +32,29 @@ export type Database = {
         Row: DynamicColumns & {
           id: string;
           name: string;
+          slug: string | null;
+          plan: string | null;
+          settings: Json | null;
           created_at: string | null;
+          updated_at: string | null;
         };
         Insert: DynamicColumns & {
           id?: string;
           name: string;
+          slug?: string | null;
+          plan?: string | null;
+          settings?: Json | null;
           created_at?: string | null;
+          updated_at?: string | null;
         };
         Update: DynamicColumns & {
           id?: string;
           name?: string;
+          slug?: string | null;
+          plan?: string | null;
+          settings?: Json | null;
           created_at?: string | null;
+          updated_at?: string | null;
         };
         Relationships: [];
       };
@@ -52,21 +64,144 @@ export type Database = {
           user_id: string;
           org_id: string;
           role: string | null;
+          invited_by: string | null;
+          invited_at: string | null;
+          accepted_at: string | null;
           created_at: string | null;
+          updated_at: string | null;
         };
         Insert: DynamicColumns & {
           id?: string;
           user_id: string;
           org_id: string;
           role?: string | null;
+          invited_by?: string | null;
+          invited_at?: string | null;
+          accepted_at?: string | null;
           created_at?: string | null;
+          updated_at?: string | null;
         };
         Update: DynamicColumns & {
           id?: string;
           user_id?: string;
           org_id?: string;
           role?: string | null;
+          invited_by?: string | null;
+          invited_at?: string | null;
+          accepted_at?: string | null;
           created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      locations: {
+        Row: DynamicColumns & {
+          id: string;
+          org_id: string;
+          name: string | null;
+          address: string | null;
+          phone: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: DynamicColumns & {
+          id?: string;
+          org_id: string;
+          name?: string | null;
+          address?: string | null;
+          phone?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: DynamicColumns & {
+          id?: string;
+          org_id?: string;
+          name?: string | null;
+          address?: string | null;
+          phone?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      user_roles: {
+        Row: DynamicColumns & {
+          id: string;
+          org_id: string;
+          email: string;
+          role: string;
+          status: string | null;
+          invited_by: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: DynamicColumns & {
+          id?: string;
+          org_id: string;
+          email: string;
+          role: string;
+          status?: string | null;
+          invited_by?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: DynamicColumns & {
+          id?: string;
+          org_id?: string;
+          email?: string;
+          role?: string;
+          status?: string | null;
+          invited_by?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      integrations: {
+        Row: DynamicColumns & {
+          id: string;
+          org_id: string | null;
+          user_id: string;
+          provider: string;
+          status: string | null;
+          oauth_state: string;
+          merchant_id: string | null;
+          access_token: string | null;
+          refresh_token: string | null;
+          token_expires_at: string | null;
+          metadata: Json | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: DynamicColumns & {
+          id?: string;
+          org_id?: string | null;
+          user_id: string;
+          provider: string;
+          status?: string | null;
+          oauth_state: string;
+          merchant_id?: string | null;
+          access_token: string;
+          refresh_token?: string | null;
+          token_expires_at?: string | null;
+          metadata?: Json | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: DynamicColumns & {
+          id?: string;
+          org_id?: string | null;
+          user_id?: string;
+          provider?: string;
+          status?: string | null;
+          oauth_state?: string;
+          merchant_id?: string | null;
+          access_token?: string;
+          refresh_token?: string | null;
+          token_expires_at?: string | null;
+          metadata?: Json | null;
+          created_at?: string | null;
+          updated_at?: string | null;
         };
         Relationships: [];
       };
