@@ -96,30 +96,37 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const { error: saveError } = await supabase.from("integrations").upsert(
+    // Save tokens via the edge function instead of writing directly
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token ?? null;
+
+    const saveResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/v1-save-square-tokens`,
       {
-        user_id: user.id,
-        provider: "square",
-        status: "connected",
-        oauth_state: state,
-        merchant_id: payload.merchant_id ?? null,
-        access_token: payload.access_token,
-        refresh_token: payload.refresh_token ?? null,
-        token_expires_at: payload.expires_at ?? null,
-        metadata: {
-          token_type: payload.token_type ?? null,
-          short_lived: payload.short_lived ?? null,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-      },
-      {
-        onConflict: "oauth_state",
+        body: JSON.stringify({
+          oauthState: state,
+          merchantId: payload.merchant_id ?? null,
+          accessToken: payload.access_token,
+          refreshToken: payload.refresh_token ?? null,
+          tokenExpiresAt: payload.expires_at ?? null,
+          metadata: {
+            token_type: payload.token_type ?? null,
+            short_lived: payload.short_lived ?? null,
+          },
+        }),
       },
     );
 
-    if (saveError) {
+    if (!saveResponse.ok) {
+      const body = await saveResponse.json().catch(() => null);
       return buildOnboardingRedirect(request, {
         square: "error",
-        message: saveError.message,
+        message: (body as { error?: string } | null)?.error ?? "Failed to save Square tokens.",
       });
     }
 

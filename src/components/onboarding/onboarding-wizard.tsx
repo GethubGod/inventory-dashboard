@@ -8,6 +8,7 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { useSupabase } from "@/components/providers/supabase-provider";
+import { useApi } from "@/hooks/use-api";
 import { ConfirmationStep } from "@/components/onboarding/steps/confirmation-step";
 import { InviteTeamStep } from "@/components/onboarding/steps/invite-team-step";
 import { LocationSetupStep } from "@/components/onboarding/steps/location-setup-step";
@@ -53,14 +54,6 @@ type DraftPayload = {
   values: OnboardingFormValues;
 };
 
-function slugifyOrganizationName(name: string) {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 48);
-}
 
 function fallbackUuid() {
   return `${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
@@ -112,6 +105,7 @@ export function OnboardingWizard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { supabase, user, isLoading } = useSupabase();
+  const api = useApi();
 
   const timezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC", []);
   const form = useForm<OnboardingFormValues>({
@@ -245,15 +239,13 @@ export function OnboardingWizard() {
     }
 
     void (async () => {
-      const { data, error } = await supabase
-        .from("integrations")
-        .select("id, merchant_id")
-        .eq("provider", "square")
-        .eq("oauth_state", squareState)
-        .maybeSingle<IntegrationRow>();
+      const result = await api.getIntegration({
+        provider: "square",
+        oauthState: squareState,
+      });
 
-      if (error || !data) {
-        toast.error(error?.message || "Square connected, but we could not find token details.");
+      if (result.error || !result.data?.integration) {
+        toast.error(result.error || "Square connected, but we could not find token details.");
         form.setValue("square.status", "not_connected", {
           shouldDirty: true,
           shouldValidate: true,
@@ -263,10 +255,10 @@ export function OnboardingWizard() {
           shouldDirty: true,
           shouldValidate: true,
         });
-        form.setValue("square.integrationId", data.id, {
+        form.setValue("square.integrationId", result.data.integration.id, {
           shouldDirty: true,
         });
-        form.setValue("square.merchantId", data.merchant_id, {
+        form.setValue("square.merchantId", result.data.integration.merchantId, {
           shouldDirty: true,
         });
         toast.success("Connected to Square.");
@@ -321,42 +313,6 @@ export function OnboardingWizard() {
     moveToStep(currentStep - 1);
   };
 
-  const createOrganizationRecord = async (values: OnboardingFormValues) => {
-    const baseSlug = slugifyOrganizationName(values.organization.name) || "babytuna-org";
-
-    for (let attempt = 0; attempt < 5; attempt += 1) {
-      const suffix = attempt === 0 ? "" : `-${Math.random().toString(36).slice(2, 7)}`;
-      const candidateSlug = `${baseSlug}${suffix}`;
-
-      const { data, error } = await supabase
-        .from("organizations")
-        .insert({
-          name: values.organization.name.trim(),
-          slug: candidateSlug,
-          plan: "free",
-          settings: {
-            org_type: values.organization.type,
-            timezone: values.organization.timezone,
-            onboarding_completed_at: new Date().toISOString(),
-          },
-        })
-        .select("id")
-        .single<{ id: string }>();
-
-      if (!error && data) {
-        return data.id;
-      }
-
-      if (error?.code === "23505") {
-        continue;
-      }
-
-      throw new Error(error?.message || "Could not create organization.");
-    }
-
-    throw new Error("Could not generate a unique organization slug.");
-  };
-
   const finishOnboarding = form.handleSubmit(async (values) => {
     if (!user) {
       toast.error("Sign in required.");
@@ -365,107 +321,25 @@ export function OnboardingWizard() {
 
     const locationRows = normalizeLocations(values.locations);
     const inviteRows = normalizeInvites(values.invites);
-    const now = new Date().toISOString();
 
     try {
-      const orgId = await createOrganizationRecord(values);
-
-      const { error: membershipError } = await supabase.from("org_memberships").upsert(
-        {
-          org_id: orgId,
-          user_id: user.id,
-          role: "owner",
-          invited_at: now,
-          accepted_at: now,
+      const result = await api.completeOnboarding({
+        organization: {
+          name: values.organization.name.trim(),
+          type: values.organization.type,
+          timezone: values.organization.timezone,
         },
-        {
-          onConflict: "org_id,user_id",
+        locations: locationRows,
+        invites: inviteRows,
+        square: {
+          status: values.square.status,
+          integrationId: values.square.integrationId,
+          oauthState: values.square.oauthState,
         },
-      );
+      });
 
-      if (membershipError) {
-        throw new Error(membershipError.message);
-      }
-
-      const { error: profileError } = await supabase.from("profiles").upsert(
-        {
-          id: user.id,
-          org_id: orgId,
-          full_name: typeof user.user_metadata.full_name === "string" ? user.user_metadata.full_name : null,
-        },
-        {
-          onConflict: "id",
-        },
-      );
-
-      if (profileError) {
-        throw new Error(profileError.message);
-      }
-
-      const { error: locationsError } = await supabase.from("locations").insert(
-        locationRows.map((location) => ({
-          org_id: orgId,
-          name: location.name,
-          address: location.address,
-          phone: location.phone,
-        })),
-      );
-
-      if (locationsError) {
-        throw new Error(locationsError.message);
-      }
-
-      if (inviteRows.length > 0) {
-        const { error: invitesError } = await supabase.from("user_roles").upsert(
-          inviteRows.map((invite) => ({
-            org_id: orgId,
-            email: invite.email,
-            role: invite.role,
-            status: "pending",
-            invited_by: user.id,
-          })),
-          {
-            onConflict: "org_id,email",
-          },
-        );
-
-        if (invitesError) {
-          throw new Error(invitesError.message);
-        }
-      }
-
-      if (values.square.status === "connected") {
-        const integrationId = values.square.integrationId;
-
-        if (integrationId) {
-          const { error: integrationError } = await supabase
-            .from("integrations")
-            .update({
-              org_id: orgId,
-              status: "connected",
-              updated_at: now,
-            })
-            .eq("id", integrationId)
-            .eq("user_id", user.id);
-
-          if (integrationError) {
-            throw new Error(integrationError.message);
-          }
-        } else if (values.square.oauthState) {
-          const { error: integrationError } = await supabase
-            .from("integrations")
-            .update({
-              org_id: orgId,
-              status: "connected",
-              updated_at: now,
-            })
-            .eq("oauth_state", values.square.oauthState)
-            .eq("user_id", user.id);
-
-          if (integrationError) {
-            throw new Error(integrationError.message);
-          }
-        }
+      if (result.error) {
+        throw new Error(result.error);
       }
 
       window.localStorage.removeItem(ONBOARDING_DRAFT_KEY);

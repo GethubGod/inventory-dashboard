@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { OrgProvider, type OrgContextValue } from "@/components/providers/org-provider";
+import { createServerApi } from "@/lib/api-client-server";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardLayout({
@@ -19,45 +20,33 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const [{ data: dbProfile }, { data: dbMembership }] = await Promise.all([
-    supabase.from("profiles").select("id, full_name").eq("id", user.id).maybeSingle(),
-    supabase
-      .from("org_memberships")
-      .select("org_id, role, accepted_at")
-      .eq("user_id", user.id)
-      .not("accepted_at", "is", null)
-      .order("accepted_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ]);
+  const api = await createServerApi();
+  const { data: ctx } = await api.getUserContext();
 
-  if (!dbMembership?.org_id) {
+  if (!ctx?.membership?.orgId) {
     redirect("/onboarding");
   }
 
-  const { data: dbOrganization } = await supabase
-    .from("organizations")
-    .select("id, name")
-    .eq("id", dbMembership.org_id)
-    .maybeSingle();
-
-  if (!dbOrganization) {
+  if (!ctx.organization) {
     redirect("/onboarding");
   }
 
   const profile: OrgContextValue["profile"] = {
     id: user.id,
-    full_name: dbProfile?.full_name ?? (user.user_metadata.full_name as string | undefined) ?? null,
+    full_name:
+      ctx.profile.fullName ??
+      (user.user_metadata.full_name as string | undefined) ??
+      null,
   };
 
   const membership: OrgContextValue["membership"] = {
-    org_id: dbMembership.org_id,
-    role: dbMembership.role ?? "member",
+    org_id: ctx.membership.orgId,
+    role: ctx.membership.role ?? "member",
   };
 
   const organization: OrgContextValue["organization"] = {
-    id: dbOrganization.id,
-    name: dbOrganization.name,
+    id: ctx.organization.id,
+    name: ctx.organization.name,
   };
 
   return (

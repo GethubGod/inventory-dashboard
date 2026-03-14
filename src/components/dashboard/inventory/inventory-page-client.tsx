@@ -46,7 +46,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { useSupabase } from "@/components/providers/supabase-provider";
+import { useApi } from "@/hooks/use-api";
 import { InventorySectionTabs } from "@/components/dashboard/inventory/inventory-section-tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -107,17 +107,13 @@ import {
   SUPPLIER_CATEGORIES,
   labelForCategory,
   labelForSupplierCategory,
-  normalizeInventoryRow,
-  normalizeSupplierRow,
   toItemCategory,
   toSupplierCategory,
   type InventoryInsert,
   type InventoryItem,
-  type InventoryRow,
   type InventoryUpdate,
   type ItemCategory,
   type SupplierCategory,
-  type SupplierRow,
   type SupplierOption,
 } from "./inventory-types";
 
@@ -589,7 +585,7 @@ function buildOptimisticItem(payload: InventoryInsert, tempId: string, orgId: st
 }
 
 export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: InventoryPageClientProps) {
-  const { supabase } = useSupabase();
+  const api = useApi();
   const queryClient = useQueryClient();
 
   const inventoryQueryKey = useMemo(() => [INVENTORY_QUERY_KEY_PREFIX, orgId] as const, [orgId]);
@@ -609,17 +605,9 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
   const inventoryQuery = useQuery({
     queryKey: inventoryQueryKey,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("inventory_items")
-        .select("*")
-        .eq("org_id", orgId)
-        .order("name", { ascending: true });
-
-      if (error) {
-        throw error;
-      }
-
-      return ((data ?? []) as InventoryRow[]).map(normalizeInventoryRow);
+      const result = await api.listInventory({ orgId });
+      if (result.error) throw new Error(result.error);
+      return result.data?.items ?? [];
     },
     initialData: initialItems,
   });
@@ -627,17 +615,9 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
   const suppliersQuery = useQuery({
     queryKey: suppliersQueryKey,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("suppliers")
-        .select("*")
-        .eq("org_id", orgId)
-        .order("name", { ascending: true });
-
-      if (error) {
-        throw error;
-      }
-
-      return ((data ?? []) as SupplierRow[]).map(normalizeSupplierRow);
+      const result = await api.listSuppliers({ orgId });
+      if (result.error) throw new Error(result.error);
+      return result.data?.suppliers ?? [];
     },
     initialData: initialSuppliers,
   });
@@ -693,17 +673,25 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
 
   const createMutation = useMutation({
     mutationFn: async ({ payload }: { payload: InventoryInsert; tempId: string }) => {
-      const { data, error } = await supabase
-        .from("inventory_items")
-        .insert(payload)
-        .select("*")
-        .single();
+      const result = await api.createInventoryItem({
+        orgId: payload.org_id,
+        name: (payload.name?.trim()) || "Untitled",
+        emoji: payload.emoji?.trim() || undefined,
+        category: ((payload.item_category ?? payload.category) as string) || "dry",
+        supplierCategory: payload.supplier_category as string | null | undefined,
+        baseUnit: (payload.base_unit?.trim()) || "unit",
+        packUnit: payload.pack_unit?.trim() || undefined,
+        packSize: typeof payload.pack_size === "number" ? payload.pack_size : undefined,
+        supplierId: payload.supplier_id?.trim() || undefined,
+        notes: payload.notes?.trim() || undefined,
+        active: payload.active ?? true,
+      });
 
-      if (error || !data) {
-        throw error ?? new Error("Unable to create item.");
+      if (result.error || !result.data) {
+        throw new Error(result.error ?? "Unable to create item.");
       }
 
-      return normalizeInventoryRow(data as InventoryRow);
+      return result.data.item;
     },
     onMutate: async ({ payload, tempId }) => {
       await queryClient.cancelQueries({ queryKey: inventoryQueryKey });
@@ -741,19 +729,26 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, values }: { id: string; values: InventoryUpdate }) => {
-      const { data, error } = await supabase
-        .from("inventory_items")
-        .update(values)
-        .eq("id", id)
-        .eq("org_id", orgId)
-        .select("*")
-        .single();
+      const result = await api.updateInventoryItem({
+        id,
+        orgId,
+        name: values.name?.trim(),
+        emoji: values.emoji?.trim(),
+        category: ((values.item_category ?? values.category) as string | undefined),
+        supplierCategory: values.supplier_category as string | null | undefined,
+        baseUnit: values.base_unit?.trim(),
+        packUnit: values.pack_unit as string | null | undefined,
+        packSize: values.pack_size as number | null | undefined,
+        supplierId: values.supplier_id as string | null | undefined,
+        notes: values.notes as string | null | undefined,
+        active: values.active,
+      });
 
-      if (error || !data) {
-        throw error ?? new Error("Unable to update item.");
+      if (result.error || !result.data) {
+        throw new Error(result.error ?? "Unable to update item.");
       }
 
-      return normalizeInventoryRow(data as InventoryRow);
+      return result.data.item;
     },
     onMutate: async ({ id, values }) => {
       await queryClient.cancelQueries({ queryKey: inventoryQueryKey });
@@ -835,16 +830,8 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("inventory_items")
-        .delete()
-        .eq("id", id)
-        .eq("org_id", orgId);
-
-      if (error) {
-        throw error;
-      }
-
+      const result = await api.deleteInventoryItem({ id, orgId });
+      if (result.error) throw new Error(result.error);
       return id;
     },
     onMutate: async (id) => {
@@ -876,18 +863,20 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
 
   const bulkPatchMutation = useMutation({
     mutationFn: async ({ ids, values }: BulkPatchInput) => {
-      const { data, error } = await supabase
-        .from("inventory_items")
-        .update(values)
-        .eq("org_id", orgId)
-        .in("id", ids)
-        .select("*");
+      const result = await api.bulkUpdateInventory({
+        orgId,
+        ids,
+        values: {
+          category: ((values.item_category ?? values.category) as string | undefined),
+          itemCategory: values.item_category as string | undefined,
+          supplierCategory: values.supplier_category as string | null | undefined,
+          supplierId: values.supplier_id as string | null | undefined,
+          active: values.active,
+        },
+      });
 
-      if (error) {
-        throw error;
-      }
-
-      return ((data ?? []) as InventoryRow[]).map(normalizeInventoryRow);
+      if (result.error) throw new Error(result.error);
+      return result.data?.items ?? [];
     },
     onMutate: async ({ ids, values }) => {
       await queryClient.cancelQueries({ queryKey: inventoryQueryKey });

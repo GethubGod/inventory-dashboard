@@ -31,7 +31,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { InventorySectionTabs } from "@/components/dashboard/inventory/inventory-section-tabs";
-import { useSupabase } from "@/components/providers/supabase-provider";
+import { useApi } from "@/hooks/use-api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -80,13 +80,9 @@ import {
   SUPPLIER_CATEGORIES,
   labelForCategory,
   labelForSupplierCategory,
-  normalizeInventoryRow,
-  normalizeSupplierRow,
   type InventoryItem,
-  type InventoryRow,
   type SupplierCategory,
   type SupplierOption,
-  type SupplierRow,
 } from "./inventory-types";
 
 const INVENTORY_QUERY_KEY_PREFIX = "inventory-items";
@@ -330,7 +326,7 @@ export function SuppliersPageClient({
   initialSuppliers,
   initialItems,
 }: SuppliersPageClientProps) {
-  const { supabase } = useSupabase();
+  const api = useApi();
   const queryClient = useQueryClient();
 
   const inventoryQueryKey = useMemo(() => [INVENTORY_QUERY_KEY_PREFIX, orgId] as const, [orgId]);
@@ -347,17 +343,9 @@ export function SuppliersPageClient({
   const suppliersQuery = useQuery({
     queryKey: suppliersQueryKey,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("suppliers")
-        .select("*")
-        .eq("org_id", orgId)
-        .order("name", { ascending: true });
-
-      if (error) {
-        throw error;
-      }
-
-      return ((data ?? []) as SupplierRow[]).map(normalizeSupplierRow);
+      const result = await api.listSuppliers({ orgId });
+      if (result.error) throw new Error(result.error);
+      return result.data?.suppliers ?? [];
     },
     initialData: initialSuppliers,
   });
@@ -365,17 +353,9 @@ export function SuppliersPageClient({
   const inventoryQuery = useQuery({
     queryKey: inventoryQueryKey,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("inventory_items")
-        .select("*")
-        .eq("org_id", orgId)
-        .order("name", { ascending: true });
-
-      if (error) {
-        throw error;
-      }
-
-      return ((data ?? []) as InventoryRow[]).map(normalizeInventoryRow);
+      const result = await api.listInventory({ orgId });
+      if (result.error) throw new Error(result.error);
+      return result.data?.items ?? [];
     },
     initialData: initialItems,
   });
@@ -433,27 +413,21 @@ export function SuppliersPageClient({
 
   const createSupplierMutation = useMutation({
     mutationFn: async (values: SupplierFormValues) => {
-      const payload = {
-        org_id: orgId,
+      const result = await api.createSupplier({
+        orgId,
         name: values.name.trim(),
         category: values.category,
         phone: values.phone?.trim() || null,
         email: values.email?.trim() || null,
         notes: values.notes?.trim() || null,
         active: values.active,
-      };
+      });
 
-      const { data, error } = await supabase
-        .from("suppliers")
-        .insert(payload)
-        .select("*")
-        .single();
-
-      if (error || !data) {
-        throw error ?? new Error("Unable to create supplier.");
+      if (result.error || !result.data) {
+        throw new Error(result.error ?? "Unable to create supplier.");
       }
 
-      return normalizeSupplierRow(data as SupplierRow);
+      return result.data.supplier;
     },
     onSuccess: (createdSupplier) => {
       const existingSuppliers = queryClient.getQueryData<SupplierOption[]>(suppliersQueryKey) ?? [];
@@ -475,28 +449,22 @@ export function SuppliersPageClient({
 
   const updateSupplierMutation = useMutation({
     mutationFn: async ({ id, values }: { id: string; values: SupplierFormValues }) => {
-      const payload = {
+      const result = await api.updateSupplier({
+        id,
+        orgId,
         name: values.name.trim(),
         category: values.category,
         phone: values.phone?.trim() || null,
         email: values.email?.trim() || null,
         notes: values.notes?.trim() || null,
         active: values.active,
-      };
+      });
 
-      const { data, error } = await supabase
-        .from("suppliers")
-        .update(payload)
-        .eq("id", id)
-        .eq("org_id", orgId)
-        .select("*")
-        .single();
-
-      if (error || !data) {
-        throw error ?? new Error("Unable to update supplier.");
+      if (result.error || !result.data) {
+        throw new Error(result.error ?? "Unable to update supplier.");
       }
 
-      return normalizeSupplierRow(data as SupplierRow);
+      return result.data.supplier;
     },
     onSuccess: (updatedSupplier) => {
       const existingSuppliers = queryClient.getQueryData<SupplierOption[]>(suppliersQueryKey) ?? [];
@@ -520,28 +488,15 @@ export function SuppliersPageClient({
 
   const deleteSupplierMutation = useMutation({
     mutationFn: async (supplierId: string) => {
-      const { count, error: countError } = await supabase
-        .from("inventory_items")
-        .select("id", { count: "exact", head: true })
-        .eq("org_id", orgId)
-        .eq("supplier_id", supplierId);
+      const result = await api.deleteSupplier({ id: supplierId, orgId });
 
-      if (countError) {
-        throw countError;
-      }
-
-      if ((count ?? 0) > 0) {
-        throw new Error(`linked:${count}`);
-      }
-
-      const { error } = await supabase
-        .from("suppliers")
-        .delete()
-        .eq("id", supplierId)
-        .eq("org_id", orgId);
-
-      if (error) {
-        throw error;
+      if (result.error) {
+        // Edge function returns a 409 with "Cannot delete supplier: N inventory item(s)..."
+        if (result.error.includes("Cannot delete supplier")) {
+          const match = result.error.match(/(\d+)/);
+          throw new Error(`linked:${match?.[1] ?? 0}`);
+        }
+        throw new Error(result.error);
       }
 
       return supplierId;
@@ -574,15 +529,13 @@ export function SuppliersPageClient({
 
   const assignItemsMutation = useMutation({
     mutationFn: async ({ supplierId, itemIds }: { supplierId: string | null; itemIds: string[] }) => {
-      const { error } = await supabase
-        .from("inventory_items")
-        .update({ supplier_id: supplierId })
-        .eq("org_id", orgId)
-        .in("id", itemIds);
+      const result = await api.assignSupplierItems({
+        orgId,
+        supplierId,
+        itemIds,
+      });
 
-      if (error) {
-        throw error;
-      }
+      if (result.error) throw new Error(result.error);
 
       return { supplierId, itemIds };
     },

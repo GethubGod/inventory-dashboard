@@ -8,6 +8,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 
 import { useSupabase } from "@/components/providers/supabase-provider";
+import { useApi } from "@/hooks/use-api";
 
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email address."),
@@ -19,6 +20,7 @@ type LoginValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const { supabase } = useSupabase();
+  const api = useApi();
 
   const {
     register,
@@ -44,24 +46,11 @@ export default function LoginPage() {
     }
 
     toast.success("Welcome back.");
-    const {
-      data: { user: signedInUser },
-    } = await supabase.auth.getUser();
 
-    if (!signedInUser) {
-      router.push("/dashboard/overview");
-      router.refresh();
-      return;
-    }
+    const { data: ctx } = await api.getUserContext();
+    const hasMembership = !!ctx?.membership?.orgId;
 
-    const { data: membership } = await supabase
-      .from("org_memberships")
-      .select("id")
-      .eq("user_id", signedInUser.id)
-      .not("accepted_at", "is", null)
-      .maybeSingle();
-
-    router.push(membership ? "/dashboard/overview" : "/onboarding");
+    router.push(hasMembership ? "/dashboard/overview" : "/onboarding");
     router.refresh();
   });
 
