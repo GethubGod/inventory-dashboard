@@ -55,7 +55,7 @@ export default async function OverviewPage() {
       offerActionLabel={data.offerActionLabel}
       offerActionHref={data.offerActionHref}
       syncStatusLabel={data.syncStatusLabel}
-      syncStatusTone={data.syncStatusTone}
+      syncStatusTone={data.syncStatusTone as "error" | "neutral" | "warning" | "healthy"}
       syncValue={data.syncValue}
       quickActions={data.quickActions}
       latestActivity={data.latestActivity}

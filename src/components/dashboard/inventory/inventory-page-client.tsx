@@ -1,11 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   type Column,
   type ColumnDef,
@@ -50,12 +46,7 @@ import { useApi } from "@/hooks/use-api";
 import { InventorySectionTabs } from "@/components/dashboard/inventory/inventory-section-tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import {
   Command,
   CommandEmpty,
@@ -83,12 +74,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -133,8 +119,7 @@ const categoryBadgeClassMap: Record<ItemCategory, string> = {
     "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/40 dark:bg-indigo-950/40 dark:text-indigo-300",
   sauces:
     "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-900/40 dark:bg-orange-950/40 dark:text-orange-300",
-  packaging:
-    "border-border bg-secondary text-muted-foreground",
+  packaging: "border-border bg-secondary text-muted-foreground",
   alcohol:
     "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-900/40 dark:bg-purple-950/40 dark:text-purple-300",
 };
@@ -142,8 +127,7 @@ const categoryBadgeClassMap: Record<ItemCategory, string> = {
 const supplierCategoryBadgeClassMap: Record<SupplierCategory, string> = {
   fish_supplier:
     "border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-cyan-900/40 dark:bg-cyan-950/30 dark:text-cyan-300",
-  main_distributor:
-    "border-border bg-secondary text-muted-foreground",
+  main_distributor: "border-border bg-secondary text-muted-foreground",
   asian_market:
     "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-900/40 dark:bg-orange-950/30 dark:text-orange-300",
 };
@@ -152,10 +136,7 @@ const inventoryFormSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
   emoji: z.string().trim().max(16, "Keep emoji short").optional(),
   category: z.enum(ITEM_CATEGORIES),
-  supplierCategory: z
-    .enum(SUPPLIER_CATEGORIES)
-    .optional()
-    .or(z.literal("")),
+  supplierCategory: z.enum(SUPPLIER_CATEGORIES).optional().or(z.literal("")),
   baseUnit: z.string().trim().min(1, "Base unit is required"),
   packUnit: z.string().trim().optional(),
   packSize: z
@@ -208,7 +189,7 @@ function escapeCsvCell(value: string | number | null | undefined) {
   }
 
   const raw = String(value);
-  if (raw.includes(",") || raw.includes("\"") || raw.includes("\n")) {
+  if (raw.includes(",") || raw.includes('"') || raw.includes("\n")) {
     return `"${raw.replaceAll('"', '""')}"`;
   }
 
@@ -269,13 +250,19 @@ function useDebouncedValue<T>(value: T, delayMs: number) {
   return debouncedValue;
 }
 
-function SortHeader({ column, title }: { column: Column<InventoryTableItem, unknown>; title: string }) {
+function SortHeader({
+  column,
+  title,
+}: {
+  column: Column<InventoryTableItem, unknown>;
+  title: string;
+}) {
   const sortingState = column.getIsSorted();
 
   return (
     <button
       type="button"
-      className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
+      className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase transition-colors"
       onClick={() => column.toggleSorting(sortingState === "asc")}
     >
       <span>{title}</span>
@@ -319,7 +306,7 @@ function IndeterminateCheckbox({
       onChange={onChange}
       onClick={onClick}
       aria-label={ariaLabel}
-      className="h-4 w-4 rounded border-border text-primary focus:ring-primary/40"
+      className="border-border text-primary focus:ring-primary/40 h-4 w-4 rounded"
     />
   );
 }
@@ -346,7 +333,9 @@ function InventoryItemSheet({
       return "Unassigned";
     }
 
-    return suppliers.find((supplier) => supplier.id === selectedSupplierId)?.name ?? "Select supplier";
+    return (
+      suppliers.find((supplier) => supplier.id === selectedSupplierId)?.name ?? "Select supplier"
+    );
   }, [selectedSupplierId, suppliers]);
 
   useEffect(() => {
@@ -360,12 +349,12 @@ function InventoryItemSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full overflow-y-auto border-border p-0 sm:max-w-xl">
-        <div className="sticky top-0 z-10 border-b border-border bg-card px-6 py-4">
-          <SheetTitle className="text-lg font-semibold text-foreground">
+      <SheetContent side="right" className="border-border w-full overflow-y-auto p-0 sm:max-w-xl">
+        <div className="border-border bg-card sticky top-0 z-10 border-b px-6 py-4">
+          <SheetTitle className="text-foreground text-lg font-semibold">
             {editingItem ? "Edit item" : "Add item"}
           </SheetTitle>
-          <SheetDescription className="text-sm text-muted-foreground">
+          <SheetDescription className="text-muted-foreground text-sm">
             {editingItem
               ? "Update inventory item details and supplier mapping."
               : "Create a new inventory item for this organization."}
@@ -378,7 +367,9 @@ function InventoryItemSheet({
               <Label htmlFor="name">Name</Label>
               <Input id="name" placeholder="Atlantic salmon fillet" {...form.register("name")} />
               {form.formState.errors.name ? (
-                <p className="text-xs text-red-600 dark:text-red-400">{form.formState.errors.name.message}</p>
+                <p className="text-xs text-red-600 dark:text-red-400">
+                  {form.formState.errors.name.message}
+                </p>
               ) : null}
             </div>
 
@@ -386,7 +377,9 @@ function InventoryItemSheet({
               <Label htmlFor="emoji">Emoji</Label>
               <Input id="emoji" placeholder="🐟" {...form.register("emoji")} />
               {form.formState.errors.emoji ? (
-                <p className="text-xs text-red-600 dark:text-red-400">{form.formState.errors.emoji.message}</p>
+                <p className="text-xs text-red-600 dark:text-red-400">
+                  {form.formState.errors.emoji.message}
+                </p>
               ) : null}
             </div>
           </div>
@@ -396,7 +389,9 @@ function InventoryItemSheet({
               <Label>Category</Label>
               <Select
                 value={form.watch("category")}
-                onValueChange={(value) => form.setValue("category", value as ItemCategory, { shouldValidate: true })}
+                onValueChange={(value) =>
+                  form.setValue("category", value as ItemCategory, { shouldValidate: true })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
@@ -410,7 +405,9 @@ function InventoryItemSheet({
                 </SelectContent>
               </Select>
               {form.formState.errors.category ? (
-                <p className="text-xs text-red-600 dark:text-red-400">{form.formState.errors.category.message}</p>
+                <p className="text-xs text-red-600 dark:text-red-400">
+                  {form.formState.errors.category.message}
+                </p>
               ) : null}
             </div>
 
@@ -446,7 +443,9 @@ function InventoryItemSheet({
               <Label htmlFor="baseUnit">Base Unit</Label>
               <Input id="baseUnit" placeholder="lb" {...form.register("baseUnit")} />
               {form.formState.errors.baseUnit ? (
-                <p className="text-xs text-red-600 dark:text-red-400">{form.formState.errors.baseUnit.message}</p>
+                <p className="text-xs text-red-600 dark:text-red-400">
+                  {form.formState.errors.baseUnit.message}
+                </p>
               ) : null}
             </div>
 
@@ -457,9 +456,18 @@ function InventoryItemSheet({
 
             <div className="space-y-2">
               <Label htmlFor="packSize">Pack Size</Label>
-              <Input id="packSize" type="number" min="0" step="0.01" placeholder="10" {...form.register("packSize")} />
+              <Input
+                id="packSize"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="10"
+                {...form.register("packSize")}
+              />
               {form.formState.errors.packSize ? (
-                <p className="text-xs text-red-600 dark:text-red-400">{form.formState.errors.packSize.message}</p>
+                <p className="text-xs text-red-600 dark:text-red-400">
+                  {form.formState.errors.packSize.message}
+                </p>
               ) : null}
             </div>
           </div>
@@ -474,7 +482,7 @@ function InventoryItemSheet({
                   className="w-full justify-between font-normal"
                 >
                   <span className="truncate">{selectedSupplierLabel}</span>
-                  <ChevronsLeftRight className="h-4 w-4 text-muted-foreground" />
+                  <ChevronsLeftRight className="text-muted-foreground h-4 w-4" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="start" className="w-[360px] p-0">
@@ -490,7 +498,12 @@ function InventoryItemSheet({
                           setSupplierPopoverOpen(false);
                         }}
                       >
-                        <Check className={cn("mr-2 h-4 w-4", !selectedSupplierId ? "opacity-100" : "opacity-0")} />
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            !selectedSupplierId ? "opacity-100" : "opacity-0",
+                          )}
+                        />
                         Unassigned
                       </CommandItem>
 
@@ -518,22 +531,33 @@ function InventoryItemSheet({
               </PopoverContent>
             </Popover>
             {form.formState.errors.supplierId ? (
-              <p className="text-xs text-red-600 dark:text-red-400">{form.formState.errors.supplierId.message}</p>
+              <p className="text-xs text-red-600 dark:text-red-400">
+                {form.formState.errors.supplierId.message}
+              </p>
             ) : null}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
-            <Textarea id="notes" rows={5} placeholder="Vendor SKU, handling notes, substitutions..." {...form.register("notes")} />
+            <Textarea
+              id="notes"
+              rows={5}
+              placeholder="Vendor SKU, handling notes, substitutions..."
+              {...form.register("notes")}
+            />
             {form.formState.errors.notes ? (
-              <p className="text-xs text-red-600 dark:text-red-400">{form.formState.errors.notes.message}</p>
+              <p className="text-xs text-red-600 dark:text-red-400">
+                {form.formState.errors.notes.message}
+              </p>
             ) : null}
           </div>
 
-          <div className="flex items-center justify-between rounded-md border border-border bg-secondary px-3 py-3">
+          <div className="border-border bg-secondary flex items-center justify-between rounded-md border px-3 py-3">
             <div>
-              <p className="text-sm font-medium text-foreground">Item status</p>
-              <p className="text-xs text-muted-foreground">Inactive items stay in history but are excluded from active workflows.</p>
+              <p className="text-foreground text-sm font-medium">Item status</p>
+              <p className="text-muted-foreground text-xs">
+                Inactive items stay in history but are excluded from active workflows.
+              </p>
             </div>
             <Switch
               checked={form.watch("active")}
@@ -541,7 +565,7 @@ function InventoryItemSheet({
             />
           </div>
 
-          <div className="flex justify-end gap-2 border-t border-border pt-4">
+          <div className="border-border flex justify-end gap-2 border-t pt-4">
             <Button
               type="button"
               variant="outline"
@@ -560,11 +584,19 @@ function InventoryItemSheet({
   );
 }
 
-function buildOptimisticItem(payload: InventoryInsert, tempId: string, orgId: string): InventoryItem {
+function buildOptimisticItem(
+  payload: InventoryInsert,
+  tempId: string,
+  orgId: string,
+): InventoryItem {
   const name = payload.name?.trim() || "Untitled item";
   const emoji = payload.emoji?.trim() || "📦";
-  const category = toItemCategory((payload.item_category as string | null | undefined) ?? payload.category);
-  const supplierCategory = toSupplierCategory(payload.supplier_category as string | null | undefined);
+  const category = toItemCategory(
+    (payload.item_category as string | null | undefined) ?? payload.category,
+  );
+  const supplierCategory = toSupplierCategory(
+    payload.supplier_category as string | null | undefined,
+  );
 
   return {
     id: tempId,
@@ -584,7 +616,11 @@ function buildOptimisticItem(payload: InventoryInsert, tempId: string, orgId: st
   };
 }
 
-export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: InventoryPageClientProps) {
+export function InventoryPageClient({
+  orgId,
+  initialItems,
+  initialSuppliers,
+}: InventoryPageClientProps) {
   const api = useApi();
   const queryClient = useQueryClient();
 
@@ -593,7 +629,9 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
 
   const [searchInput, setSearchInput] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<ItemCategory[]>([]);
-  const [supplierCategoryFilter, setSupplierCategoryFilter] = useState<"all" | SupplierCategory>("all");
+  const [supplierCategoryFilter, setSupplierCategoryFilter] = useState<"all" | SupplierCategory>(
+    "all",
+  );
   const [statusFilter, setStatusFilter] = useState<"active" | "inactive">("active");
   const [sorting, setSorting] = useState<SortingState>([{ id: "name", desc: false }]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -646,7 +684,7 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
     () =>
       items.map((item) => ({
         ...item,
-        supplierName: item.supplierId ? suppliersById.get(item.supplierId)?.name ?? null : null,
+        supplierName: item.supplierId ? (suppliersById.get(item.supplierId)?.name ?? null) : null,
       })),
     [items, suppliersById],
   );
@@ -656,7 +694,8 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
   const filteredItems = useMemo(
     () =>
       tableItems.filter((item) => {
-        const matchesSearch = normalizedSearch.length === 0 || item.name.toLowerCase().includes(normalizedSearch);
+        const matchesSearch =
+          normalizedSearch.length === 0 || item.name.toLowerCase().includes(normalizedSearch);
 
         const matchesCategory =
           selectedCategories.length === 0 || selectedCategories.includes(item.category);
@@ -675,11 +714,11 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
     mutationFn: async ({ payload }: { payload: InventoryInsert; tempId: string }) => {
       const result = await api.createInventoryItem({
         orgId: payload.org_id,
-        name: (payload.name?.trim()) || "Untitled",
+        name: payload.name?.trim() || "Untitled",
         emoji: payload.emoji?.trim() || undefined,
         category: ((payload.item_category ?? payload.category) as string) || "dry",
         supplierCategory: payload.supplier_category as string | null | undefined,
-        baseUnit: (payload.base_unit?.trim()) || "unit",
+        baseUnit: payload.base_unit?.trim() || "unit",
         packUnit: payload.pack_unit?.trim() || undefined,
         packSize: typeof payload.pack_size === "number" ? payload.pack_size : undefined,
         supplierId: payload.supplier_id?.trim() || undefined,
@@ -699,7 +738,10 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
       const previousItems = queryClient.getQueryData<InventoryItem[]>(inventoryQueryKey) ?? [];
       const optimisticItem = buildOptimisticItem(payload, tempId, orgId);
 
-      queryClient.setQueryData<InventoryItem[]>(inventoryQueryKey, [optimisticItem, ...previousItems]);
+      queryClient.setQueryData<InventoryItem[]>(inventoryQueryKey, [
+        optimisticItem,
+        ...previousItems,
+      ]);
 
       return { previousItems, tempId };
     },
@@ -734,14 +776,14 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
         orgId,
         name: values.name?.trim(),
         emoji: values.emoji?.trim(),
-        category: ((values.item_category ?? values.category) as string | undefined),
+        category: (values.item_category ?? values.category) as string | undefined,
         supplierCategory: values.supplier_category as string | null | undefined,
         baseUnit: values.base_unit?.trim(),
         packUnit: values.pack_unit as string | null | undefined,
         packSize: values.pack_size as number | null | undefined,
         supplierId: values.supplier_id as string | null | undefined,
         notes: values.notes as string | null | undefined,
-        active: values.active,
+        active: values.active ?? undefined,
       });
 
       if (result.error || !result.data) {
@@ -793,13 +835,13 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                 ? values.supplier_id.trim() || null
                 : values.supplier_id === null
                   ? null
-                : item.supplierId,
+                  : item.supplierId,
             notes:
               typeof values.notes === "string"
                 ? values.notes.trim() || null
                 : values.notes === null
                   ? null
-                : item.notes,
+                  : item.notes,
             active: typeof values.active === "boolean" ? values.active : item.active,
             updatedAt: new Date().toISOString(),
           };
@@ -867,11 +909,11 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
         orgId,
         ids,
         values: {
-          category: ((values.item_category ?? values.category) as string | undefined),
+          category: (values.item_category ?? values.category) as string | undefined,
           itemCategory: values.item_category as string | undefined,
           supplierCategory: values.supplier_category as string | null | undefined,
           supplierId: values.supplier_id as string | null | undefined,
-          active: values.active,
+          active: values.active ?? undefined,
         },
       });
 
@@ -905,7 +947,7 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                 ? values.supplier_id.trim() || null
                 : values.supplier_id === null
                   ? null
-                : item.supplierId,
+                  : item.supplierId,
             active: typeof values.active === "boolean" ? values.active : item.active,
             updatedAt: new Date().toISOString(),
           };
@@ -974,8 +1016,10 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
       {
         id: "emoji",
         accessorKey: "emoji",
-        header: () => <span className="text-xs font-semibold uppercase tracking-wide">Emoji</span>,
-        cell: ({ row }) => <div className="text-center text-lg leading-none">{row.original.emoji}</div>,
+        header: () => <span className="text-xs font-semibold tracking-wide uppercase">Emoji</span>,
+        cell: ({ row }) => (
+          <div className="text-center text-lg leading-none">{row.original.emoji}</div>
+        ),
         enableSorting: false,
         size: 70,
       },
@@ -985,8 +1029,8 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
         header: ({ column }) => <SortHeader column={column} title="Name" />,
         cell: ({ row }) => (
           <div className="min-w-[220px]">
-            <p className="truncate font-semibold text-foreground">{row.original.name}</p>
-            <p className="truncate text-xs text-muted-foreground">ID: {row.original.id}</p>
+            <p className="text-foreground truncate font-semibold">{row.original.name}</p>
+            <p className="text-muted-foreground truncate text-xs">ID: {row.original.id}</p>
           </div>
         ),
         size: 300,
@@ -1018,7 +1062,7 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
               {labelForSupplierCategory(row.original.supplierCategory)}
             </Badge>
           ) : (
-            <span className="text-xs text-muted-foreground">Unspecified</span>
+            <span className="text-muted-foreground text-xs">Unspecified</span>
           ),
         size: 170,
       },
@@ -1075,7 +1119,9 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
       },
       {
         id: "actions",
-        header: () => <span className="text-xs font-semibold uppercase tracking-wide">Actions</span>,
+        header: () => (
+          <span className="text-xs font-semibold tracking-wide uppercase">Actions</span>
+        ),
         cell: ({ row }) => {
           const currentItem = row.original;
 
@@ -1131,7 +1177,9 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                       bulkPatchMutation.mutate({
                         ids: [currentItem.id],
                         values: { active: !currentItem.active },
-                        successMessage: currentItem.active ? "Item deactivated." : "Item activated.",
+                        successMessage: currentItem.active
+                          ? "Item deactivated."
+                          : "Item activated.",
                       });
                     }}
                   >
@@ -1144,7 +1192,9 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                   <DropdownMenuItem
                     className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
                     onClick={() => {
-                      const confirmed = window.confirm(`Delete \"${currentItem.name}\"? This cannot be undone.`);
+                      const confirmed = window.confirm(
+                        `Delete \"${currentItem.name}\"? This cannot be undone.`,
+                      );
 
                       if (confirmed) {
                         deleteMutation.mutate(currentItem.id);
@@ -1271,9 +1321,7 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
 
   async function handleSheetSubmit(values: InventoryFormValues) {
     const packSizeValue =
-      values.packSize && values.packSize.trim().length > 0
-        ? Number(values.packSize)
-        : null;
+      values.packSize && values.packSize.trim().length > 0 ? Number(values.packSize) : null;
 
     const normalizedPayload = {
       name: values.name.trim(),
@@ -1323,7 +1371,9 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
         supplier_id: supplierId,
       },
       successMessage:
-        supplierId === null ? "Supplier cleared for selected items." : "Supplier assigned to selected items.",
+        supplierId === null
+          ? "Supplier cleared for selected items."
+          : "Supplier assigned to selected items.",
     });
 
     setRowSelection({});
@@ -1370,10 +1420,8 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
 
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Inventory
-          </h1>
-          <p className="text-sm text-muted-foreground">Manage your ingredient catalog</p>
+          <h1 className="text-foreground text-2xl font-semibold tracking-tight">Inventory</h1>
+          <p className="text-muted-foreground text-sm">Manage your ingredient catalog</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -1402,7 +1450,7 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
         <CardHeader className="space-y-4">
           <div className="grid gap-3 lg:grid-cols-[minmax(320px,1fr)_220px_220px_auto]">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+              <Search className="text-muted-foreground pointer-events-none absolute top-3.5 left-3 h-4 w-4" />
               <Input
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
@@ -1419,7 +1467,7 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                       ? "All categories"
                       : `${selectedCategories.length} categor${selectedCategories.length === 1 ? "y" : "ies"}`}
                   </span>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <ChevronDown className="text-muted-foreground h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-64">
@@ -1434,7 +1482,9 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                       key={category}
                       checked={isChecked}
                       onSelect={(event) => event.preventDefault()}
-                      onCheckedChange={(checked) => handleCategoryToggle(category, checked === true)}
+                      onCheckedChange={(checked) =>
+                        handleCategoryToggle(category, checked === true)
+                      }
                     >
                       {labelForCategory(category)}
                     </DropdownMenuCheckboxItem>
@@ -1442,13 +1492,17 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                 })}
 
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setSelectedCategories([])}>Clear category filters</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSelectedCategories([])}>
+                  Clear category filters
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
             <Select
               value={supplierCategoryFilter}
-              onValueChange={(value) => setSupplierCategoryFilter(value as "all" | SupplierCategory)}
+              onValueChange={(value) =>
+                setSupplierCategoryFilter(value as "all" | SupplierCategory)
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Supplier category" />
@@ -1463,7 +1517,7 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
               </SelectContent>
             </Select>
 
-            <div className="inline-flex h-10 rounded-md border border-border bg-card p-1">
+            <div className="border-border bg-card inline-flex h-10 rounded-md border p-1">
               <button
                 type="button"
                 onClick={() => setStatusFilter("active")}
@@ -1492,27 +1546,33 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
           </div>
 
           <CardDescription>
-            {totalFilteredCount.toLocaleString()} item{totalFilteredCount === 1 ? "" : "s"} match current filters.
+            {totalFilteredCount.toLocaleString()} item{totalFilteredCount === 1 ? "" : "s"} match
+            current filters.
           </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-4">
           {selectedIds.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-foreground">
+            <div className="border-primary/30 bg-primary/10 text-foreground flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-sm">
               <span className="font-medium">{selectedIds.length} items selected</span>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="outline" className="border-current/30 bg-card/70">
+                  <Button size="sm" variant="outline" className="bg-card/70 border-current/30">
                     Assign Supplier
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-60" align="start">
                   <DropdownMenuLabel>Select supplier</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => handleBulkAssignSupplier(null)}>Unassigned</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleBulkAssignSupplier(null)}>
+                    Unassigned
+                  </DropdownMenuItem>
                   {suppliers.map((supplier) => (
-                    <DropdownMenuItem key={supplier.id} onClick={() => handleBulkAssignSupplier(supplier.id)}>
+                    <DropdownMenuItem
+                      key={supplier.id}
+                      onClick={() => handleBulkAssignSupplier(supplier.id)}
+                    >
                       {supplier.name}
                     </DropdownMenuItem>
                   ))}
@@ -1521,7 +1581,7 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="outline" className="border-current/30 bg-card/70">
+                  <Button size="sm" variant="outline" className="bg-card/70 border-current/30">
                     Change Category
                   </Button>
                 </DropdownMenuTrigger>
@@ -1529,14 +1589,22 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                   <DropdownMenuLabel>Select category</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {ITEM_CATEGORIES.map((category) => (
-                    <DropdownMenuItem key={category} onClick={() => handleBulkChangeCategory(category)}>
+                    <DropdownMenuItem
+                      key={category}
+                      onClick={() => handleBulkChangeCategory(category)}
+                    >
                       {labelForCategory(category)}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button size="sm" variant="outline" className="border-current/30 bg-card/70" onClick={handleBulkDeactivate}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="bg-card/70 border-current/30"
+                onClick={handleBulkDeactivate}
+              >
                 Deactivate
               </Button>
 
@@ -1555,13 +1623,13 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
             </div>
           ) : filteredItems.length === 0 ? (
             items.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-border bg-secondary p-10 text-center ">
-                <p className="text-sm font-medium text-foreground">No inventory items yet.</p>
-                <p className="mt-1 text-sm text-muted-foreground">
+              <div className="border-border bg-secondary rounded-xl border border-dashed p-10 text-center">
+                <p className="text-foreground text-sm font-medium">No inventory items yet.</p>
+                <p className="text-muted-foreground mt-1 text-sm">
                   Add your first item to get started.
                 </p>
                 <Button
-                  className="mt-4 bg-primary hover:bg-primary/90"
+                  className="bg-primary hover:bg-primary/90 mt-4"
                   onClick={() => {
                     setEditingItem(null);
                     setSheetOpen(true);
@@ -1572,9 +1640,9 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                 </Button>
               </div>
             ) : (
-              <div className="rounded-xl border border-dashed border-border bg-secondary p-10 text-center ">
-                <p className="text-sm font-medium text-foreground">No items match your filters.</p>
-                <p className="mt-1 text-sm text-muted-foreground">
+              <div className="border-border bg-secondary rounded-xl border border-dashed p-10 text-center">
+                <p className="text-foreground text-sm font-medium">No items match your filters.</p>
+                <p className="text-muted-foreground mt-1 text-sm">
                   Try adjusting search text, categories, or status.
                 </p>
                 <Button
@@ -1592,7 +1660,7 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
               </div>
             )
           ) : (
-            <div className="rounded-xl border border-border">
+            <div className="border-border rounded-xl border">
               <Table>
                 <TableHeader className="bg-secondary">
                   {table.getHeaderGroups().map((headerGroup) => (
@@ -1625,23 +1693,26 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                       </TableRow>
 
                       {row.getIsExpanded() ? (
-                        <TableRow key={`${row.id}-expanded`} className="bg-secondary/80 hover:bg-secondary/80">
+                        <TableRow
+                          key={`${row.id}-expanded`}
+                          className="bg-secondary/80 hover:bg-secondary/80"
+                        >
                           <TableCell colSpan={row.getVisibleCells().length} className="py-4">
                             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                               <div>
-                                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                <p className="text-muted-foreground text-xs tracking-wide uppercase">
                                   Pack Configuration
                                 </p>
-                                <p className="text-sm font-medium text-foreground">
+                                <p className="text-foreground text-sm font-medium">
                                   {row.original.packSize ?? "-"} {row.original.packUnit ?? ""}
                                 </p>
                               </div>
 
                               <div>
-                                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                <p className="text-muted-foreground text-xs tracking-wide uppercase">
                                   Supplier Category
                                 </p>
-                                <p className="text-sm font-medium text-foreground">
+                                <p className="text-foreground text-sm font-medium">
                                   {row.original.supplierCategory
                                     ? labelForSupplierCategory(row.original.supplierCategory)
                                     : "Unspecified"}
@@ -1649,25 +1720,25 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                               </div>
 
                               <div>
-                                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                <p className="text-muted-foreground text-xs tracking-wide uppercase">
                                   Created
                                 </p>
-                                <p className="text-sm font-medium text-foreground">
+                                <p className="text-foreground text-sm font-medium">
                                   {formatDateTime(row.original.createdAt)}
                                 </p>
                               </div>
 
                               <div>
-                                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                <p className="text-muted-foreground text-xs tracking-wide uppercase">
                                   Updated
                                 </p>
-                                <p className="text-sm font-medium text-foreground">
+                                <p className="text-foreground text-sm font-medium">
                                   {formatDateTime(row.original.updatedAt)}
                                 </p>
                               </div>
                             </div>
 
-                            <div className="mt-3 rounded-md border border-border bg-card px-3 py-2 text-sm text-muted-foreground">
+                            <div className="border-border bg-card text-muted-foreground mt-3 rounded-md border px-3 py-2 text-sm">
                               {row.original.notes || "No notes added for this item yet."}
                             </div>
                           </TableCell>
@@ -1681,9 +1752,10 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
           )}
 
           {filteredItems.length > 0 ? (
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3 text-sm">
+            <div className="border-border flex flex-wrap items-center justify-between gap-3 border-t pt-3 text-sm">
               <p className="text-muted-foreground">
-                Showing {startItem.toLocaleString()}-{endItem.toLocaleString()} of {totalFilteredCount.toLocaleString()} items
+                Showing {startItem.toLocaleString()}-{endItem.toLocaleString()} of{" "}
+                {totalFilteredCount.toLocaleString()} items
               </p>
 
               <div className="flex items-center gap-2">
@@ -1695,8 +1767,9 @@ export function InventoryPageClient({ orgId, initialItems, initialSuppliers }: I
                 >
                   Previous
                 </Button>
-                <span className="min-w-[100px] text-center text-muted-foreground">
-                  Page {table.getState().pagination.pageIndex + 1} of {Math.max(table.getPageCount(), 1)}
+                <span className="text-muted-foreground min-w-[100px] text-center">
+                  Page {table.getState().pagination.pageIndex + 1} of{" "}
+                  {Math.max(table.getPageCount(), 1)}
                 </span>
                 <Button
                   variant="outline"

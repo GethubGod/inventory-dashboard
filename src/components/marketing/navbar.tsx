@@ -34,7 +34,9 @@ export function Navbar() {
     } else {
       document.body.style.overflow = "";
     }
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isOpen]);
 
   // ─── Focus trap inside menu ───────────────────────
@@ -42,7 +44,7 @@ export function Navbar() {
     if (!isOpen || !menuRef.current) return;
 
     const focusableEls = menuRef.current.querySelectorAll<HTMLElement>(
-      'a[href], button, [tabindex]:not([tabindex="-1"])'
+      'a[href], button, [tabindex]:not([tabindex="-1"])',
     );
     if (focusableEls.length === 0) return;
 
@@ -84,18 +86,13 @@ export function Navbar() {
       "rgba(20,20,20,0.15)",
       "rgba(255,255,255,0.35)",
       "rgba(255,255,255,0.55)",
-    ]
+    ],
   );
 
   const navBorder = useTransform(
     scrollY,
     [0, 2400, 3200, 4000],
-    [
-      "rgba(255,255,255,0.0)",
-      "rgba(255,255,255,0.08)",
-      "rgba(0,0,0,0.04)",
-      "rgba(0,0,0,0.08)",
-    ]
+    ["rgba(255,255,255,0.0)", "rgba(255,255,255,0.08)", "rgba(0,0,0,0.04)", "rgba(0,0,0,0.08)"],
   );
 
   // ─── Text/icon color ─────────────────────────────
@@ -108,35 +105,12 @@ export function Navbar() {
       "rgba(255,255,255,0.85)",
       "rgba(30,30,30,0.7)",
       "rgba(11,11,11,0.85)",
-    ]
+    ],
   );
 
   const brandSwap = useTransform(scrollY, [2600, 3400], [0, 1]);
   const lightBrandOpacity = useTransform(brandSwap, [0, 1], [1, 0]);
   const darkBrandOpacity = useTransform(brandSwap, [0, 1], [0, 1]);
-
-  // ─── Liquid-glass pill backgrounds ────────────────
-  const pillBg = useTransform(
-    scrollY,
-    [0, 2400, 3600, 4000],
-    [
-      "rgba(255,255,255,0.07)",
-      "rgba(255,255,255,0.10)",
-      "rgba(255,255,255,0.35)",
-      "rgba(255,255,255,0.50)",
-    ]
-  );
-
-  const pillBorder = useTransform(
-    scrollY,
-    [0, 2400, 3600, 4000],
-    [
-      "rgba(255,255,255,0.10)",
-      "rgba(255,255,255,0.12)",
-      "rgba(0,0,0,0.06)",
-      "rgba(0,0,0,0.08)",
-    ]
-  );
 
   // ─── Menu animation variants ──────────────────────
   // Panel slides down from top, slight scale
@@ -173,7 +147,6 @@ export function Navbar() {
 
   const NAV_ITEMS = [
     { label: "Features", href: "#features" },
-    { label: "How It Works", href: "#how-it-works" },
     { label: "Pricing", href: "#pricing" },
   ];
 
@@ -187,7 +160,7 @@ export function Navbar() {
         }}
         className="fixed top-0 z-50 w-full border-b backdrop-blur-xl"
       >
-        <div className="mx-auto flex h-[60px] lg:h-[72px] w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 relative">
+        <div className="relative mx-auto flex h-[60px] w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:h-[72px] lg:px-8">
           {/* Logo */}
           <div className="flex items-center">
             <Link
@@ -206,7 +179,7 @@ export function Navbar() {
 
               <motion.span
                 aria-hidden="true"
-                className="absolute inset-0 flex items-center pointer-events-none"
+                className="pointer-events-none absolute inset-0 flex items-center"
                 style={{ opacity: lightBrandOpacity }}
               >
                 <Brand
@@ -219,7 +192,7 @@ export function Navbar() {
 
               <motion.span
                 aria-hidden="true"
-                className="absolute inset-0 flex items-center pointer-events-none"
+                className="pointer-events-none absolute inset-0 flex items-center"
                 style={{ opacity: darkBrandOpacity }}
               >
                 <Brand
@@ -233,22 +206,26 @@ export function Navbar() {
           </div>
 
           {/* Desktop center nav */}
-          <nav className="hidden lg:flex items-center gap-8 text-sm font-medium absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <nav className="absolute top-1/2 left-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-8 text-sm font-medium lg:flex">
             {NAV_ITEMS.map((item) => (
-              <Link key={item.href} href={item.href} className="hover:opacity-70 transition-opacity">
+              <Link
+                key={item.href}
+                href={item.href}
+                className="transition-opacity hover:opacity-70"
+              >
                 {item.label}
               </Link>
             ))}
           </nav>
 
           {/* Desktop right actions */}
-          <div className="hidden lg:flex items-center gap-4">
-            <Link href="/login" className="text-sm font-medium hover:opacity-70 transition-opacity">
+          <div className="hidden items-center gap-4 lg:flex">
+            <Link href="/login" className="text-sm font-medium transition-opacity hover:opacity-70">
               Log In
             </Link>
             <Link
               href="/signup"
-              className="rounded-full bg-lime-500 px-5 py-2 text-sm font-medium text-black hover:bg-lime-400 transition-colors focus:outline-none focus:ring-2 focus:ring-lime-400 focus:ring-offset-2 focus:ring-offset-black"
+              className="rounded-full bg-lime-500 px-5 py-2 text-sm font-medium text-black transition-colors hover:bg-lime-400 focus:ring-2 focus:ring-lime-400 focus:ring-offset-2 focus:ring-offset-black focus:outline-none"
             >
               Get Started
             </Link>
@@ -256,7 +233,7 @@ export function Navbar() {
 
           {/* Mobile Toggle */}
           <button
-            className="lg:hidden p-2 focus:outline-none focus:ring-2 focus:ring-white/30 rounded-lg relative z-[60]"
+            className="relative z-[60] rounded-lg p-2 focus:ring-2 focus:ring-white/30 focus:outline-none lg:hidden"
             onClick={() => setIsOpen(!isOpen)}
             aria-label={isOpen ? "Close menu" : "Open menu"}
             aria-expanded={isOpen}
@@ -300,16 +277,17 @@ export function Navbar() {
               aria-label="Navigation menu"
             >
               <div
-                className="relative rounded-2xl overflow-hidden"
+                className="relative overflow-hidden rounded-2xl"
                 style={{
                   background: "rgba(28, 28, 30, 0.78)",
                   backdropFilter: "blur(40px) saturate(1.5)",
                   WebkitBackdropFilter: "blur(40px) saturate(1.5)",
                   border: "1px solid rgba(255,255,255,0.12)",
-                  boxShadow: "0 24px 48px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08)",
+                  boxShadow:
+                    "0 24px 48px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08)",
                 }}
               >
-                <nav className="flex flex-col py-3 px-2">
+                <nav className="flex flex-col px-2 py-3">
                   {NAV_ITEMS.map((item, i) => (
                     <motion.div
                       key={item.href}
@@ -321,7 +299,7 @@ export function Navbar() {
                       <Link
                         href={item.href}
                         onClick={closeMenu}
-                        className="block text-[15px] font-medium text-white/90 hover:text-white hover:bg-white/8 rounded-xl px-4 py-3 transition-colors active:scale-[0.98] transform"
+                        className="block transform rounded-xl px-4 py-3 text-[15px] font-medium text-white/90 transition-colors hover:bg-white/8 hover:text-white active:scale-[0.98]"
                       >
                         {item.label}
                       </Link>
@@ -341,7 +319,7 @@ export function Navbar() {
                     <Link
                       href="/login"
                       onClick={closeMenu}
-                      className="block text-[15px] font-medium text-white/55 hover:text-white/80 hover:bg-white/8 rounded-xl px-4 py-3 transition-colors"
+                      className="block rounded-xl px-4 py-3 text-[15px] font-medium text-white/55 transition-colors hover:bg-white/8 hover:text-white/80"
                     >
                       Log In
                     </Link>
@@ -358,7 +336,7 @@ export function Navbar() {
                     <Link
                       href="/signup"
                       onClick={closeMenu}
-                      className="block w-full text-center rounded-xl bg-lime-500 py-2.5 text-sm font-semibold text-black hover:bg-lime-400 transition-colors active:scale-[0.97] transform shadow-[0_0_20px_rgba(132,204,22,0.2)]"
+                      className="block w-full transform rounded-xl bg-lime-500 py-2.5 text-center text-sm font-semibold text-black shadow-[0_0_20px_rgba(132,204,22,0.2)] transition-colors hover:bg-lime-400 active:scale-[0.97]"
                     >
                       Get Started
                     </Link>

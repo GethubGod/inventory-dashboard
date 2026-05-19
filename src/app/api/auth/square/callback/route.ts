@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
+import { validateOAuthState } from "@/lib/security/oauth-state";
 import { createClient } from "@/lib/supabase/server";
+
+// ── Schema for query params ─────────────────────────────────
+const callbackParamsSchema = z.object({
+  code: z.string().min(1, "Missing authorization code"),
+  state: z.string().min(16, "Invalid state parameter"),
+  error: z.string().optional(),
+  error_description: z.string().optional(),
+});
 
 type SquareTokenResponse = {
   access_token?: string;
@@ -29,24 +39,36 @@ function buildOnboardingRedirect(request: NextRequest, params: Record<string, st
 }
 
 export async function GET(request: NextRequest) {
-  const code = request.nextUrl.searchParams.get("code");
-  const state = request.nextUrl.searchParams.get("state");
-  const error = request.nextUrl.searchParams.get("error");
-
-  if (error) {
+  // Check for error from Square first
+  const errorParam = request.nextUrl.searchParams.get("error");
+  if (errorParam) {
     return buildOnboardingRedirect(request, {
       square: "error",
-      message: error,
+      message: request.nextUrl.searchParams.get("error_description") || errorParam,
     });
   }
 
-  if (!code || !state) {
+  // Validate query params with Zod
+  const rawParams = {
+    code: request.nextUrl.searchParams.get("code"),
+    state: request.nextUrl.searchParams.get("state"),
+    error: request.nextUrl.searchParams.get("error") ?? undefined,
+    error_description: request.nextUrl.searchParams.get("error_description") ?? undefined,
+  };
+
+  const parsed = callbackParamsSchema.safeParse(rawParams);
+
+  if (!parsed.success) {
+    const firstError = parsed.error.issues[0]?.message ?? "Invalid callback parameters.";
     return buildOnboardingRedirect(request, {
       square: "error",
-      message: "Missing code or state.",
+      message: firstError,
     });
   }
 
+  const { code, state } = parsed.data;
+
+  // Verify Square credentials
   const appId = process.env.NEXT_PUBLIC_SQUARE_APP_ID;
   const appSecret = process.env.SQUARE_APP_SECRET;
 
@@ -57,6 +79,7 @@ export async function GET(request: NextRequest) {
     });
   }
 
+  // Authenticate the current user
   const supabase = await createClient();
   const {
     data: { user },
@@ -69,21 +92,35 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  try {
-    const tokenResponse = await fetch(`${process.env.SQUARE_API_BASE_URL || DEFAULT_SQUARE_API_BASE}/oauth2/token`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        client_id: appId,
-        client_secret: appSecret,
-        code,
-        grant_type: "authorization_code",
-        redirect_uri: `${request.nextUrl.origin}/api/auth/square/callback`,
-      }),
-      cache: "no-store",
+  // ── Validate OAuth state (CSRF + replay protection) ─────────
+  const stateValidation = await validateOAuthState(state, user.id);
+
+  if (!stateValidation.valid) {
+    return buildOnboardingRedirect(request, {
+      square: "error",
+      message: stateValidation.reason,
     });
+  }
+
+  try {
+    // Exchange authorization code for tokens
+    const tokenResponse = await fetch(
+      `${process.env.SQUARE_API_BASE_URL || DEFAULT_SQUARE_API_BASE}/oauth2/token`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          client_id: appId,
+          client_secret: appSecret,
+          code,
+          grant_type: "authorization_code",
+          redirect_uri: `${request.nextUrl.origin}/api/auth/square/callback`,
+        }),
+        cache: "no-store",
+      },
+    );
 
     const payload = (await tokenResponse.json()) as SquareTokenResponse;
 
@@ -97,7 +134,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Save tokens via the edge function instead of writing directly
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     const token = session?.access_token ?? null;
 
     const saveResponse = await fetch(
